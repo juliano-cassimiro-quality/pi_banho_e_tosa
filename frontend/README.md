@@ -1,25 +1,33 @@
 # Frontend - Sistema de Banho e Tosa
 
+## Stack
+
+- [Angular 17](https://angular.dev/) com componentes standalone
+- Arquitetura em camadas (domain → application → infrastructure → presentation)
+- HttpClient com interceptador para autenticação JWT
+- Reactive Forms e Signals para controle de estado
+
 ## Scripts
 
 - `npm install` — instala dependências.
-- `npm start` — executa o projeto em modo desenvolvimento (porta 3000).
-- `npm run build` — gera build de produção.
+- `npm start` — executa o projeto em modo desenvolvimento (porta 4200).
+- `npm run build` — gera build de produção em `dist/`.
+- `npm test` — executa testes unitários com Karma.
 
 ## Configuração
 
-Crie um arquivo `.env` na raiz do frontend com a variável `REACT_APP_API_URL` apontando para a API Express (por padrão `http://localhost:4000/api`).
+Configure a URL da API em `src/environments/environment.ts`. Por padrão apontamos para `http://localhost:8080/api`.
 
 ## Estrutura
 
 ```
 src/
-  components/   # Componentes reutilizáveis (botões, cards, layout)
-  contexts/     # Contexto de autenticação
-  hooks/        # Hooks customizados
-  pages/        # Páginas principais (login, pets, agendamentos, dashboard)
-  routes/       # Rotas protegidas e públicas
-  services/     # Configuração do Axios
+  app/
+    core/            # Modelos de domínio, contratos e casos de uso
+    infrastructure/  # Implementações HTTP e serviços de armazenamento
+    presentation/    # Componentes de UI, páginas e rotas
+  environments/      # Configurações por ambiente
+  main.ts            # Bootstrap da aplicação
 ```
 
-O projeto utiliza TailwindCSS para estilização e responsividade.
+Os repositórios concretos são registrados no bootstrap, mantendo a camada de aplicação desacoplada de detalhes de infraestrutura.
