@@ -1,25 +1,29 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/pi_banho_e_tosa}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://dpg-d3erc39r0fns73cujen0-a.oregon-postgres.render.com:5432/db_esteticapetdogs_hf6m
+    username: db_esteticapetdogs_hf6m_user
+    password: ULj5BpvIAQKgPIixWzzGKlOKSGcAxVgF
+
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
+
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
+
 server:
   port: ${PORT:8080}
   servlet:
     context-path: /api
+
 app:
   jwt:
     secret: ${JWT_SECRET:change-me-please-change-me-please}
-    expiration: ${JWT_EXPIRATION:PT4H}
+    expiration: ${JWT_EXPIRATION:PT4H}  # 4 horas
   schedule:
     start-hour: 9
     end-hour: 18
