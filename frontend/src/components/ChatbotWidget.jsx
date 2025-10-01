@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import { ChatBubbleOvalLeftEllipsisIcon, PaperAirplaneIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import api from '../services/api'
 
-const INITIAL_MESSAGE = 'Olá! Eu sou a Luma, assistente virtual da Banho & Tosa. Como posso te ajudar hoje?'
+const INITIAL_MESSAGE =
+  'Olá! Eu sou a Luma, assistente virtual da Banho & Tosa Premium. Posso te contar sobre nossos serviços, preços, horários, promoções ou mesmo abrir a agenda para você. O que deseja saber primeiro?'
 const DEFAULT_SUGGESTIONS = [
-  'Quais serviços vocês oferecem?',
-  'Quais são os horários de funcionamento?',
-  'Como faço para agendar?',
-  'Posso cancelar um agendamento?'
+  'Quais serviços premium vocês oferecem?',
+  'Quais são as formas de pagamento?',
+  'Como preparar meu pet para o atendimento?',
+  'Como faço para agendar?'
 ]
 
 export default function ChatbotWidget ({ initialOpen = false, openSignal = 0 }) {
@@ -115,7 +116,7 @@ export default function ChatbotWidget ({ initialOpen = false, openSignal = 0 }) 
           </div>
           {suggestions.length > 0 && (
             <div className="flex flex-wrap gap-2 border-t border-slate-200 px-4 py-2">
-              {suggestions.slice(0, 3).map(suggestion => (
+              {suggestions.slice(0, 4).map(suggestion => (
                 <button
                   key={suggestion}
                   type="button"
