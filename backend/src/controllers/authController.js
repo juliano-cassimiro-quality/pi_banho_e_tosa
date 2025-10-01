@@ -1,4 +1,4 @@
-import { autenticarCliente, recuperarSenha, redefinirSenha } from '../services/authService.js'
+import { autenticarUsuario, recuperarSenha, redefinirSenha } from '../services/authService.js'
 import { sendNotification, NotificationType } from '../utils/notifications.js'
 
 export async function login (req, res) {
@@ -7,7 +7,7 @@ export async function login (req, res) {
     return res.status(400).json({ error: 'Informe e-mail e senha' })
   }
 
-  const resultado = await autenticarCliente({ email, senha })
+  const resultado = await autenticarUsuario({ email, senha })
   res.json(resultado)
 }
 

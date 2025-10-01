@@ -3,12 +3,23 @@ import {
   definirDisponibilidade,
   registrarIndisponibilidade,
   listarDisponibilidades,
-  listarIndisponibilidades
+  listarIndisponibilidades,
+  criarProfissional
 } from '../services/profissionaisService.js'
 
 export async function listar (req, res) {
   const profissionais = await listarProfissionais()
   res.json(profissionais)
+}
+
+export async function criar (req, res) {
+  const { nome, telefone, email, senha } = req.body
+  if (!nome || !email || !senha) {
+    return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios' })
+  }
+
+  const profissional = await criarProfissional({ nome, telefone, email, senha })
+  res.status(201).json(profissional)
 }
 
 export async function salvarDisponibilidade (req, res) {

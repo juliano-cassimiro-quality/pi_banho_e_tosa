@@ -9,13 +9,27 @@ BEGIN
   END IF;
 END $$;
 
+CREATE TABLE IF NOT EXISTS roles (
+  id_role UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  nome VARCHAR(50) NOT NULL UNIQUE
+);
+
+INSERT INTO roles (nome)
+SELECT 'cliente'
+WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nome = 'cliente');
+
+INSERT INTO roles (nome)
+SELECT 'profissional'
+WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nome = 'profissional');
+
 CREATE TABLE IF NOT EXISTS clientes (
   id_cliente UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nome VARCHAR(150) NOT NULL,
   telefone VARCHAR(20) NOT NULL,
   email VARCHAR(150) NOT NULL UNIQUE,
   senha_hash TEXT NOT NULL,
-  data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  id_role UUID REFERENCES roles(id_role)
 );
 
 CREATE TABLE IF NOT EXISTS profissionais (
@@ -24,8 +38,23 @@ CREATE TABLE IF NOT EXISTS profissionais (
   telefone VARCHAR(20),
   email VARCHAR(150) UNIQUE,
   senha_hash TEXT,
-  ativo BOOLEAN NOT NULL DEFAULT TRUE
+  ativo BOOLEAN NOT NULL DEFAULT TRUE,
+  id_role UUID REFERENCES roles(id_role)
 );
+
+UPDATE clientes
+SET id_role = (SELECT id_role FROM roles WHERE nome = 'cliente')
+WHERE id_role IS NULL;
+
+UPDATE profissionais
+SET id_role = (SELECT id_role FROM roles WHERE nome = 'profissional')
+WHERE id_role IS NULL;
+
+ALTER TABLE clientes
+  ALTER COLUMN id_role SET NOT NULL;
+
+ALTER TABLE profissionais
+  ALTER COLUMN id_role SET NOT NULL;
 
 CREATE TABLE IF NOT EXISTS animais (
   id_animal UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { comparePassword, hashPassword } from '../utils/password.js'
 import { obterClientePorEmail } from './clientesService.js'
+import { obterProfissionalPorEmail } from './profissionaisService.js'
 import { query } from '../config/database.js'
 
 function generateToken (payload) {
@@ -9,15 +10,57 @@ function generateToken (payload) {
   })
 }
 
-export async function autenticarCliente ({ email, senha }) {
+function mapUsuarioRetorno (usuario, tipo) {
+  if (tipo === 'cliente') {
+    return {
+      id: usuario.id_cliente,
+      id_cliente: usuario.id_cliente,
+      nome: usuario.nome,
+      email: usuario.email,
+      role: usuario.role
+    }
+  }
+
+  return {
+    id: usuario.id_profissional,
+    id_profissional: usuario.id_profissional,
+    nome: usuario.nome,
+    email: usuario.email,
+    role: usuario.role
+  }
+}
+
+export async function autenticarUsuario ({ email, senha }) {
   const cliente = await obterClientePorEmail(email)
-  if (!cliente) {
+  if (cliente) {
+    const senhaValida = await comparePassword(senha, cliente.senha_hash)
+    if (!senhaValida) {
+      const error = new Error('Credenciais inválidas')
+      error.status = 401
+      throw error
+    }
+
+    const token = generateToken({
+      sub: cliente.id_cliente,
+      role: cliente.role,
+      email: cliente.email,
+      nome: cliente.nome
+    })
+
+    return {
+      token,
+      usuario: mapUsuarioRetorno(cliente, 'cliente')
+    }
+  }
+
+  const profissional = await obterProfissionalPorEmail(email)
+  if (!profissional) {
     const error = new Error('Credenciais inválidas')
     error.status = 401
     throw error
   }
 
-  const senhaValida = await comparePassword(senha, cliente.senha_hash)
+  const senhaValida = await comparePassword(senha, profissional.senha_hash)
   if (!senhaValida) {
     const error = new Error('Credenciais inválidas')
     error.status = 401
@@ -25,19 +68,15 @@ export async function autenticarCliente ({ email, senha }) {
   }
 
   const token = generateToken({
-    sub: cliente.id_cliente,
-    role: 'cliente',
-    email: cliente.email,
-    nome: cliente.nome
+    sub: profissional.id_profissional,
+    role: profissional.role,
+    email: profissional.email,
+    nome: profissional.nome
   })
 
   return {
     token,
-    cliente: {
-      id_cliente: cliente.id_cliente,
-      nome: cliente.nome,
-      email: cliente.email
-    }
+    usuario: mapUsuarioRetorno(profissional, 'profissional')
   }
 }
 
@@ -49,7 +88,7 @@ export async function recuperarSenha ({ email }) {
     throw error
   }
 
-  const token = generateToken({ sub: cliente.id_cliente, role: 'cliente', action: 'password_recovery' })
+  const token = generateToken({ sub: cliente.id_cliente, role: cliente.role, action: 'password_recovery' })
 
   await query(
     `INSERT INTO tokens_recuperacao (id_cliente, token, expiracao)

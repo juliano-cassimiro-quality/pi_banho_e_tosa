@@ -5,10 +5,15 @@ import { Disclosure } from '@headlessui/react'
 import useAuth from '../hooks/useAuth'
 import Button from './Button'
 
-const navigation = [
+const clientNavigation = [
   { name: 'Agendamentos', to: '/agendamentos' },
   { name: 'Agendar serviço', to: '/agendar' },
   { name: 'Pets', to: '/pets' },
+  { name: 'Dashboard', to: '/dashboard' }
+]
+
+const professionalNavigation = [
+  { name: 'Gestão', to: '/gestao' },
   { name: 'Dashboard', to: '/dashboard' }
 ]
 
@@ -36,6 +41,8 @@ export default function Layout () {
     navigate('/login')
   }
 
+  const navigationItems = user?.role === 'profissional' ? professionalNavigation : clientNavigation
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Disclosure as="nav" className="border-b border-slate-200 bg-white shadow-sm">
@@ -46,7 +53,7 @@ export default function Layout () {
                 <div className="flex items-center gap-6">
                   <div className="text-lg font-semibold text-primary-600">Banho &amp; Tosa</div>
                   <div className="hidden gap-2 md:flex">
-                    {navigation.map(item => (
+                    {navigationItems.map(item => (
                       <NavItem key={item.name} item={item} />
                     ))}
                   </div>
@@ -63,7 +70,7 @@ export default function Layout () {
               </div>
             </div>
             <Disclosure.Panel className="space-y-1 border-t border-slate-200 bg-white px-2 pb-3 pt-2 md:hidden">
-              {navigation.map(item => (
+              {navigationItems.map(item => (
                 <NavLink
                   key={item.name}
                   to={item.to}
