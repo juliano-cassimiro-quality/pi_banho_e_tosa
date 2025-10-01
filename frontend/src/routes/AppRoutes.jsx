@@ -8,6 +8,7 @@ import PetsPage from '../pages/PetsPage'
 import SchedulePage from '../pages/SchedulePage'
 import AppointmentsPage from '../pages/AppointmentsPage'
 import DashboardPage from '../pages/DashboardPage'
+import ManagementPage from '../pages/ManagementPage'
 
 function ProtectedRoute ({ children }) {
   const { isAuthenticated } = useAuth()
@@ -18,14 +19,17 @@ function ProtectedRoute ({ children }) {
 }
 
 function PublicOnlyRoute ({ children }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   if (isAuthenticated) {
-    return <Navigate to="/agendamentos" replace />
+    return <Navigate to={user?.role === 'profissional' ? '/gestao' : '/agendamentos'} replace />
   }
   return children
 }
 
 export default function AppRoutes () {
+  const { user } = useAuth()
+  const defaultAuthenticatedPath = user?.role === 'profissional' ? '/gestao' : '/agendamentos'
+
   return (
     <Routes>
       <Route
@@ -52,13 +56,14 @@ export default function AppRoutes () {
           </ProtectedRoute>
         )}
       >
-        <Route index element={<Navigate to="/agendamentos" replace />} />
+        <Route index element={<Navigate to={defaultAuthenticatedPath} replace />} />
         <Route path="agendamentos" element={<AppointmentsPage />} />
         <Route path="agendar" element={<SchedulePage />} />
         <Route path="pets" element={<PetsPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="gestao" element={<ManagementPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/agendamentos" replace />} />
+      <Route path="*" element={<Navigate to={defaultAuthenticatedPath} replace />} />
     </Routes>
   )
 }

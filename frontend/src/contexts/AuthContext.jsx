@@ -31,7 +31,7 @@ export function AuthProvider ({ children }) {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', { email, senha })
-      setUser(data.cliente)
+      setUser(data.usuario)
       setToken(data.token)
       return data
     } finally {

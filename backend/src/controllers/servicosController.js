@@ -12,8 +12,8 @@ export async function listar (req, res) {
 
 export async function criar (req, res) {
   const { nomeServico, descricao, valor, tempoEstimado } = req.body
-  if (!nomeServico || !tempoEstimado) {
-    return res.status(400).json({ error: 'Nome e tempo estimado são obrigatórios' })
+  if (!nomeServico) {
+    return res.status(400).json({ error: 'Nome do serviço é obrigatório' })
   }
 
   const servico = await criarServico({ nomeServico, descricao, valor, tempoEstimado })
