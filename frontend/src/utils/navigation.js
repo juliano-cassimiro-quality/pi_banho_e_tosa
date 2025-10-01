@@ -1,5 +1,4 @@
 const ROLE_DEFAULTS = {
-  admin: 'dashboard',
   profissional: 'gestao'
 }
 

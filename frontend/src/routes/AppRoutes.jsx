@@ -7,7 +7,6 @@ import RegisterPage from '../pages/RegisterPage'
 import PetsPage from '../pages/PetsPage'
 import SchedulePage from '../pages/SchedulePage'
 import AppointmentsPage from '../pages/AppointmentsPage'
-import DashboardPage from '../pages/DashboardPage'
 import ManagementPage from '../pages/ManagementPage'
 import LandingPage from '../pages/LandingPage'
 import { getDefaultNestedPath, getDefaultPath } from '../utils/navigation'
@@ -76,17 +75,9 @@ export default function AppRoutes () {
         <Route path="agendar" element={<SchedulePage />} />
         <Route path="pets" element={<PetsPage />} />
         <Route
-          path="dashboard"
-          element={(
-            <RoleRoute roles={['admin']}>
-              <DashboardPage />
-            </RoleRoute>
-          )}
-        />
-        <Route
           path="gestao"
           element={(
-            <RoleRoute roles={['profissional', 'admin']}>
+            <RoleRoute roles={['profissional']}>
               <ManagementPage />
             </RoleRoute>
           )}
