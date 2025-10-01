@@ -25,14 +25,14 @@ export default function AppointmentsPage () {
   const fetchAgendamentos = async () => {
     setLoading(true)
     try {
-      const { data } = await api.get(`/agendamentos/clientes/${user.id_cliente}`)
+      const { data } = await api.get('/appointments')
       setAgendamentos(
         data.map(item => ({
           ...item,
-          data: dayjs(item.data_horario).format('DD/MM/YYYY HH:mm'),
-          servico: item.nome_servico,
-          profissional: item.profissional,
-          animal: item.animal,
+          data: dayjs(item.dataHora).format('DD/MM/YYYY HH:mm'),
+          servico: item.tipoServico.replace(/_/g, ' '),
+          profissional: item.profissional?.nome,
+          animal: item.animal?.nome,
           status: item.status
         }))
       )
@@ -42,7 +42,7 @@ export default function AppointmentsPage () {
   }
 
   useEffect(() => {
-    if (user?.id_cliente) {
+    if (user) {
       fetchAgendamentos()
     }
   }, [user])
@@ -51,7 +51,7 @@ export default function AppointmentsPage () {
     const motivo = window.prompt('Informe o motivo do cancelamento:')
     if (!motivo) return
     try {
-      await api.post(`/agendamentos/${agendamento.id_agendamento}/cancelar`, { motivo })
+      await api.post(`/appointments/${agendamento.id}/cancel`, { motivo })
       setMessage('Agendamento cancelado com sucesso.')
       fetchAgendamentos()
     } catch (err) {
@@ -60,10 +60,10 @@ export default function AppointmentsPage () {
   }
 
   const handleReschedule = async agendamento => {
-    const novoHorario = window.prompt('Informe o novo horário (YYYY-MM-DDTHH:mm):', dayjs(agendamento.data_horario).toISOString().slice(0, 16))
+    const novoHorario = window.prompt('Informe o novo horário (YYYY-MM-DDTHH:mm):', dayjs(agendamento.dataHora).toISOString().slice(0, 16))
     if (!novoHorario) return
     try {
-      await api.post(`/agendamentos/${agendamento.id_agendamento}/reagendar`, { novoHorario })
+      await api.post(`/appointments/${agendamento.id}/reschedule`, { novaDataHora: novoHorario })
       setMessage('Agendamento reagendado com sucesso.')
       fetchAgendamentos()
     } catch (err) {
@@ -83,24 +83,27 @@ export default function AppointmentsPage () {
           columns={columns}
           data={agendamentos.map(item => ({
             ...item,
-            acoes: (
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => handleReschedule(item)}
-                  disabled={item.status === 'cancelado' || item.status === 'concluido'}
-                >
-                  Reagendar
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleCancel(item)}
-                  disabled={item.status !== 'confirmado' && item.status !== 'pendente'}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            )
+            status: item.status.toLowerCase(),
+            acoes: user?.role === 'cliente'
+              ? (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleReschedule(item)}
+                      disabled={['cancelado', 'concluido'].includes(item.status.toLowerCase())}
+                    >
+                      Reagendar
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => handleCancel(item)}
+                      disabled={!['agendado', 'confirmado'].includes(item.status.toLowerCase())}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                )
+              : null
           }))}
           emptyMessage={loading ? 'Carregando agendamentos...' : 'Nenhum agendamento encontrado.'}
         />

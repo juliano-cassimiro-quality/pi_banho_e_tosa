@@ -4,9 +4,15 @@ import api from '../services/api'
 const AuthContext = createContext()
 
 export function AuthProvider ({ children }) {
+  const normalizeUser = raw => {
+    if (!raw) return null
+    const role = typeof raw.role === 'string' ? raw.role.toLowerCase() : raw.role
+    return { ...raw, role }
+  }
+
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('auth_user')
-    return stored ? JSON.parse(stored) : null
+    return stored ? normalizeUser(JSON.parse(stored)) : null
   })
   const [token, setToken] = useState(() => localStorage.getItem('auth_token'))
   const [loading, setLoading] = useState(false)
@@ -27,13 +33,18 @@ export function AuthProvider ({ children }) {
     }
   }, [user])
 
+  const persistAuth = data => {
+    const mappedUser = normalizeUser(data.usuario)
+    setUser(mappedUser)
+    setToken(data.token)
+    return { ...data, usuario: mappedUser }
+  }
+
   async function login ({ email, senha }) {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', { email, senha })
-      setUser(data.usuario)
-      setToken(data.token)
-      return data
+      return persistAuth(data)
     } finally {
       setLoading(false)
     }
@@ -42,8 +53,8 @@ export function AuthProvider ({ children }) {
   async function register ({ nome, telefone, email, senha }) {
     setLoading(true)
     try {
-      const { data } = await api.post('/clientes', { nome, telefone, email, senha })
-      return data
+      const { data } = await api.post('/auth/register', { nome, telefone, email, senha })
+      return persistAuth(data)
     } finally {
       setLoading(false)
     }
