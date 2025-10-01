@@ -15,9 +15,9 @@ export default function ManagementPage () {
 
   if (!['profissional', 'admin'].includes(user?.role)) {
     return (
-      <div className="rounded-xl bg-white p-8 text-center shadow">
-        <h2 className="text-xl font-semibold text-slate-700">Acesso restrito</h2>
-        <p className="mt-2 text-sm text-slate-500">
+      <div className="rounded-[32px] border border-neutral-600/40 bg-surface-200/80 p-8 text-center text-neutral-100 shadow-card">
+        <h2 className="text-xl font-semibold text-white">Acesso restrito</h2>
+        <p className="mt-2 text-sm text-neutral-400">
           Somente profissionais autorizados podem cadastrar pessoas e serviços.
         </p>
       </div>
@@ -82,7 +82,7 @@ export default function ManagementPage () {
             <Input label="Telefone" name="telefone" value={profissionalForm.telefone} onChange={handleProfissionalChange} />
             <Input label="E-mail" name="email" type="email" value={profissionalForm.email} onChange={handleProfissionalChange} required />
             <Input label="Senha" name="senha" type="password" value={profissionalForm.senha} onChange={handleProfissionalChange} required />
-            {feedback.profissional && <p className="text-sm text-slate-500">{feedback.profissional}</p>}
+            {feedback.profissional && <p className="text-sm text-neutral-300">{feedback.profissional}</p>}
             <Button type="submit" className="w-full" disabled={loading.profissional}>
               {loading.profissional ? 'Cadastrando...' : 'Cadastrar profissional'}
             </Button>
@@ -92,13 +92,13 @@ export default function ManagementPage () {
         <Card title="Cadastrar novo serviço">
           <form onSubmit={handleCadastrarServico} className="space-y-4">
             <Input label="Nome do serviço" name="nomeServico" value={servicoForm.nomeServico} onChange={handleServicoChange} required />
-            <label className="flex flex-col gap-1 text-sm font-medium text-slate-600">
+            <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
               <span>Descrição</span>
               <textarea
                 name="descricao"
                 value={servicoForm.descricao}
                 onChange={handleServicoChange}
-                className="min-h-[80px] rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                className="min-h-[120px] rounded-2xl border border-neutral-600/40 bg-surface-100/70 px-4 py-3 text-sm text-neutral-100 shadow-card focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/40"
               />
             </label>
             <Input
@@ -116,7 +116,7 @@ export default function ManagementPage () {
               value={servicoForm.tempoEstimado}
               onChange={handleServicoChange}
             />
-            {feedback.servico && <p className="text-sm text-slate-500">{feedback.servico}</p>}
+            {feedback.servico && <p className="text-sm text-neutral-300">{feedback.servico}</p>}
             <Button type="submit" className="w-full" disabled={loading.servico}>
               {loading.servico ? 'Cadastrando...' : 'Cadastrar serviço'}
             </Button>

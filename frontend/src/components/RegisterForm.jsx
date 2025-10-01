@@ -68,19 +68,19 @@ export default function RegisterForm ({ onSuccess, onOpenLogin, showLoginLink = 
           onChange={handleChange}
           required
         />
-        {error && <p className="md:col-span-2 text-sm text-red-500">{error}</p>}
-        <Button type="submit" className="md:col-span-2 w-full" disabled={loading}>
+        {error && <p className="md:col-span-2 text-sm font-medium text-danger-500">{error}</p>}
+        <Button type="submit" className="w-full md:col-span-2" disabled={loading}>
           {loading ? 'Cadastrando...' : 'Criar conta e acessar'}
         </Button>
       </form>
       {showLoginLink && (
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-neutral-400">
           Já possui conta?
           {' '}
           <button
             type="button"
             onClick={onOpenLogin}
-            className="font-medium text-primary-600 transition hover:text-primary-700"
+            className="font-medium text-accent-400 transition hover:text-accent-300"
           >
             Faça login
           </button>

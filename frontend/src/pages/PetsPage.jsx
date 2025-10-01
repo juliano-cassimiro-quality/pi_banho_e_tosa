@@ -63,16 +63,16 @@ export default function PetsPage () {
             <Input label="Espécie" name="especie" value={form.especie} onChange={handleChange} required />
             <Input label="Porte" name="porte" value={form.porte} onChange={handleChange} />
             <Input label="Idade" name="idade" type="number" value={form.idade} onChange={handleChange} />
-            <label className="flex flex-col gap-1 text-sm font-medium text-slate-600">
+            <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
               <span>Observações</span>
               <textarea
                 name="observacoes"
                 value={form.observacoes}
                 onChange={handleChange}
-                className="min-h-[80px] rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                className="min-h-[120px] rounded-2xl border border-neutral-600/40 bg-surface-100/70 px-4 py-3 text-sm text-neutral-100 shadow-card focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/40"
               />
             </label>
-            {feedback && <p className="text-sm text-slate-500">{feedback}</p>}
+            {feedback && <p className="text-sm text-neutral-300">{feedback}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Salvando...' : 'Salvar pet'}
             </Button>

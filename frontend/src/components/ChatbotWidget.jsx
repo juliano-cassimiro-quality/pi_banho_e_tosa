@@ -79,49 +79,49 @@ export default function ChatbotWidget ({ initialOpen = false, openSignal = 0 }) 
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {isOpen ? (
-        <div className="flex w-80 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-          <div className="flex items-center justify-between bg-primary-600 px-4 py-3 text-white">
+        <div className="flex w-80 flex-col overflow-hidden rounded-3xl border border-neutral-600/40 bg-surface-200/90 shadow-elevated backdrop-blur">
+          <div className="flex items-center justify-between bg-accent-500/90 px-4 py-3 text-white">
             <div>
               <p className="text-sm font-semibold">Assistente Banho &amp; Tosa</p>
-              <p className="text-xs opacity-90">Tempo médio de resposta em segundos</p>
+              <p className="text-xs opacity-85">Tempo médio de resposta em segundos</p>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-full p-1 transition hover:bg-primary-500"
+              className="rounded-full p-1 transition hover:bg-accent-600/80"
               aria-label="Fechar chat"
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
           </div>
-          <div className="flex flex-1 flex-col gap-3 overflow-y-auto bg-slate-50 px-4 py-3">
+          <div className="flex flex-1 flex-col gap-3 overflow-y-auto bg-surface-100/60 px-4 py-3">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`max-w-[90%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm ${
+                className={`max-w-[90%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-card ${
                   message.sender === 'user'
-                    ? 'self-end rounded-br-none bg-primary-600 text-white'
-                    : 'self-start rounded-bl-none bg-white text-slate-700'
+                    ? 'self-end rounded-br-none bg-accent-500 text-white'
+                    : 'self-start rounded-bl-none bg-surface-200/80 text-neutral-100'
                 }`}
               >
                 {renderMessage(message)}
               </div>
             ))}
             {loading && (
-              <div className="self-start rounded-2xl rounded-bl-none bg-white px-3 py-2 text-sm text-slate-500 shadow-sm">
+              <div className="self-start rounded-2xl rounded-bl-none bg-surface-200/80 px-3 py-2 text-sm text-neutral-300 shadow-card">
                 Digitando...
               </div>
             )}
             <div ref={endRef} />
           </div>
           {suggestions.length > 0 && (
-            <div className="flex flex-wrap gap-2 border-t border-slate-200 px-4 py-2">
+            <div className="flex flex-wrap gap-2 border-t border-neutral-600/30 bg-surface-200/70 px-4 py-2">
               {suggestions.slice(0, 4).map(suggestion => (
                 <button
                   key={suggestion}
                   type="button"
                   onClick={() => handleSuggestion(suggestion)}
-                  className="rounded-full border border-primary-200 px-3 py-1 text-xs text-primary-600 transition hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-full border border-accent-500/40 bg-transparent px-3 py-1 text-xs text-accent-300 transition hover:bg-accent-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={loading}
                 >
                   {suggestion}
@@ -129,18 +129,18 @@ export default function ChatbotWidget ({ initialOpen = false, openSignal = 0 }) 
               ))}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-slate-200 bg-white px-4 py-3">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-neutral-600/30 bg-surface-200/80 px-4 py-3">
             <input
               type="text"
               value={input}
               onChange={event => setInput(event.target.value)}
               placeholder="Digite sua mensagem"
-              className="flex-1 rounded-full border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              className="flex-1 rounded-full border border-neutral-600/40 bg-surface-100/60 px-3 py-2 text-sm text-neutral-100 placeholder-neutral-500 focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/40"
               disabled={loading}
             />
             <button
               type="submit"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary-600 text-white transition hover:bg-primary-700 disabled:opacity-60"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-accent-500 text-white transition hover:bg-accent-600 disabled:opacity-60"
               disabled={loading}
               aria-label="Enviar mensagem"
             >
@@ -152,7 +152,7 @@ export default function ChatbotWidget ({ initialOpen = false, openSignal = 0 }) 
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-3 rounded-full bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-lg transition hover:bg-primary-700"
+          className="flex items-center gap-3 rounded-full bg-accent-500 px-4 py-2 text-sm font-medium text-white shadow-elevated transition hover:bg-accent-600"
         >
           <ChatBubbleOvalLeftEllipsisIcon className="h-5 w-5" />
           Falar com a Luma

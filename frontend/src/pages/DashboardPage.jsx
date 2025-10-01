@@ -41,7 +41,7 @@ export default function DashboardPage () {
     return (
       <div className="space-y-4 text-center">
         <PageHeader title="Acesso restrito" description="Somente administradores podem visualizar este painel." />
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-neutral-400">
           Utilize a landing page ou o fluxo de agendamento rápido para acompanhar seus atendimentos.
         </p>
       </div>
@@ -51,7 +51,7 @@ export default function DashboardPage () {
   return (
     <div>
       <PageHeader title="Painel administrativo" description="Acompanhe os principais indicadores do espaço." />
-      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+      {error && <p className="mb-4 text-sm font-medium text-danger-500">{error}</p>}
       {stats && (
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           <StatsCard label="Clientes" value={stats.totalClientes} />

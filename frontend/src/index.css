@@ -7,5 +7,8 @@ html, body, #root {
 }
 
 body {
-  @apply bg-slate-50 text-slate-700;
+  @apply bg-ink-900 text-neutral-100 font-inter antialiased;
+  background-image: radial-gradient(circle at top left, rgba(124, 109, 255, 0.18), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(180, 165, 255, 0.12), transparent 60%),
+    linear-gradient(180deg, #050611 0%, #0b0f1f 45%, #050611 100%);
 }
