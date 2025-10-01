@@ -20,7 +20,7 @@ export default function RegisterPage () {
     try {
       await register(form)
       await login({ email: form.email, senha: form.senha })
-      navigate('/agendamentos')
+      navigate('/app/agendamentos')
     } catch (err) {
       setError(err.response?.data?.error || 'Não foi possível realizar o cadastro')
     }

@@ -21,7 +21,7 @@ export default function LoginPage () {
     setError('')
     try {
       await login(form)
-      navigate('/agendamentos')
+      navigate('/app/agendamentos')
     } catch (err) {
       setError(err.response?.data?.error || 'Não foi possível realizar login')
     }
