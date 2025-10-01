@@ -1,88 +1,25 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import Button from '../components/Button'
-import Input from '../components/Input'
-import useAuth from '../hooks/useAuth'
-import api from '../services/api'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import LoginForm from '../components/LoginForm'
 
 export default function LoginPage () {
-  const { login, loading } = useAuth()
-  const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', senha: '' })
-  const [error, setError] = useState('')
-  const [recoveryMessage, setRecoveryMessage] = useState('')
-
-  const handleChange = event => {
-    setForm(prev => ({ ...prev, [event.target.name]: event.target.value }))
-  }
-
-  const handleSubmit = async event => {
-    event.preventDefault()
-    setError('')
-    try {
-      await login(form)
-      navigate('/app/agendamentos')
-    } catch (err) {
-      setError(err.response?.data?.error || 'Não foi possível realizar login')
-    }
-  }
-
-  const handleRecovery = async () => {
-    if (!form.email) {
-      setRecoveryMessage('Informe um e-mail para recuperar a senha.')
-      return
-    }
-
-    try {
-      await api.post('/auth/recovery', { email: form.email })
-      setRecoveryMessage('Se o e-mail estiver cadastrado, um token foi enviado (verifique o console da API).')
-    } catch (err) {
-      setRecoveryMessage(err.response?.data?.error || 'Erro ao solicitar recuperação.')
-    }
-  }
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-50 to-white px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
-        <div className="mb-6 text-center">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary-50 via-white to-white px-4">
+      <div className="w-full max-w-md space-y-6 rounded-2xl bg-white p-8 shadow-xl">
+        <div className="text-center">
           <h1 className="text-2xl font-bold text-slate-900">Acesse sua conta</h1>
           <p className="mt-2 text-sm text-slate-500">Gerencie agendamentos de banho e tosa com facilidade.</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="E-mail"
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            label="Senha"
-            name="senha"
-            type="password"
-            autoComplete="current-password"
-            value={form.senha}
-            onChange={handleChange}
-            required
-          />
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
-          </Button>
-        </form>
-        <button
-          type="button"
-          onClick={handleRecovery}
-          className="mt-4 text-sm text-primary-600 hover:text-primary-700"
-        >
-          Esqueci minha senha
-        </button>
-        {recoveryMessage && <p className="mt-2 text-xs text-slate-500">{recoveryMessage}</p>}
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Ainda não possui conta?{' '}
-          <Link to="/cadastro" className="font-medium text-primary-600 hover:text-primary-700">
+        <LoginForm showRegisterLink={false} />
+        <p className="text-center text-xs text-slate-400">
+          Precisa de ajuda? Entre em contato pelo chat com a Luma ou envie um e-mail para{' '}
+          <a href="mailto:contato@banhoetosa.com" className="font-medium text-primary-600 hover:text-primary-700">
+            contato@banhoetosa.com
+          </a>
+        </p>
+        <p className="text-center text-sm text-slate-500">
+          Ainda não possui conta?
+          <Link to="/cadastro" className="ml-1 font-medium text-primary-600 hover:text-primary-700">
             Cadastre-se
           </Link>
         </p>
