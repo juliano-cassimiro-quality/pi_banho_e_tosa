@@ -2,18 +2,22 @@ import React from 'react'
 import clsx from 'clsx'
 
 const colors = {
-  blue: 'bg-blue-50 text-blue-700',
-  green: 'bg-emerald-50 text-emerald-700',
-  violet: 'bg-violet-50 text-violet-700',
-  orange: 'bg-orange-50 text-orange-700',
-  red: 'bg-red-50 text-red-700'
+  blue: 'from-blue-500 to-indigo-500',
+  green: 'from-emerald-500 to-teal-500',
+  violet: 'from-violet-500 to-purple-500',
+  orange: 'from-orange-500 to-amber-500',
+  red: 'from-rose-500 to-red-500'
 }
 
 export default function StatsCard ({ label, value, color = 'blue' }) {
+  const gradient = colors[color] || colors.blue
+
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-white/70 bg-white/75 p-6 shadow-xl backdrop-blur">
       <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className={clsx('mt-2 text-3xl font-semibold', colors[color] || colors.blue)}>{value}</p>
+      <div className={clsx('mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r px-5 py-2 text-white shadow-lg', gradient)}>
+        <span className="text-3xl font-semibold">{value}</span>
+      </div>
     </div>
   )
 }

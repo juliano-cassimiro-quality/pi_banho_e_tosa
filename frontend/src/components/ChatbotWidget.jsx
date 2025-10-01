@@ -10,7 +10,7 @@ const DEFAULT_SUGGESTIONS = [
   'Posso cancelar um agendamento?'
 ]
 
-export default function ChatbotWidget ({ initialOpen = false }) {
+export default function ChatbotWidget ({ initialOpen = false, openSignal = 0 }) {
   const [isOpen, setIsOpen] = useState(initialOpen)
   const [messages, setMessages] = useState([{ sender: 'bot', text: INITIAL_MESSAGE }])
   const [input, setInput] = useState('')
@@ -23,6 +23,12 @@ export default function ChatbotWidget ({ initialOpen = false }) {
       endRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages, isOpen])
+
+  useEffect(() => {
+    if (openSignal > 0) {
+      setIsOpen(true)
+    }
+  }, [openSignal])
 
   const sendMessage = async content => {
     if (loading) return
