@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Input from './Input'
 import Button from './Button'
 import useAuth from '../hooks/useAuth'
-
-const getDefaultPath = role => (role === 'profissional' ? '/app/gestao' : '/app/agendamentos')
+import { getDefaultPath } from '../utils/navigation'
 
 export default function RegisterForm ({ onSuccess, onOpenLogin, showLoginLink = true }) {
   const { register, login, loading } = useAuth()

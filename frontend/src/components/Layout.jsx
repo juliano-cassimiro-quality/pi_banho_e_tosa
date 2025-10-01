@@ -9,13 +9,21 @@ import ChatbotWidget from './ChatbotWidget'
 const clientNavigation = [
   { name: 'Agendamentos', to: '/app/agendamentos' },
   { name: 'Agendar serviço', to: '/app/agendar' },
-  { name: 'Pets', to: '/app/pets' },
-  { name: 'Dashboard', to: '/app/dashboard' }
+  { name: 'Pets', to: '/app/pets' }
 ]
 
 const professionalNavigation = [
   { name: 'Gestão', to: '/app/gestao' },
-  { name: 'Dashboard', to: '/app/dashboard' }
+  { name: 'Agendamentos', to: '/app/agendamentos' },
+  { name: 'Pets', to: '/app/pets' }
+]
+
+const adminNavigation = [
+  { name: 'Dashboard', to: '/app/dashboard' },
+  { name: 'Agendamentos', to: '/app/agendamentos' },
+  { name: 'Agendar serviço', to: '/app/agendar' },
+  { name: 'Pets', to: '/app/pets' },
+  { name: 'Gestão', to: '/app/gestao' }
 ]
 
 function NavItem ({ item }) {
@@ -44,7 +52,12 @@ export default function Layout () {
     navigate('/login')
   }
 
-  const navigationItems = user?.role === 'profissional' ? professionalNavigation : clientNavigation
+  const navigationItems =
+    user?.role === 'admin'
+      ? adminNavigation
+      : user?.role === 'profissional'
+        ? professionalNavigation
+        : clientNavigation
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-brand-50 via-white to-primary-50">

@@ -13,12 +13,12 @@ export default function ManagementPage () {
   const [feedback, setFeedback] = useState({ profissional: '', servico: '' })
   const [loading, setLoading] = useState({ profissional: false, servico: false })
 
-  if (user?.role !== 'profissional') {
+  if (!['profissional', 'admin'].includes(user?.role)) {
     return (
       <div className="rounded-xl bg-white p-8 text-center shadow">
         <h2 className="text-xl font-semibold text-slate-700">Acesso restrito</h2>
         <p className="mt-2 text-sm text-slate-500">
-          Somente profissionais autenticados podem cadastrar pessoas e serviços.
+          Somente profissionais autorizados podem cadastrar pessoas e serviços.
         </p>
       </div>
     )

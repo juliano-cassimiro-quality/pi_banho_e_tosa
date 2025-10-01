@@ -4,8 +4,7 @@ import Input from './Input'
 import Button from './Button'
 import useAuth from '../hooks/useAuth'
 import api from '../services/api'
-
-const getDefaultPath = role => (role === 'profissional' ? '/app/gestao' : '/app/agendamentos')
+import { getDefaultPath } from '../utils/navigation'
 
 export default function LoginForm ({ onSuccess, showRegisterLink = true, onOpenRegister }) {
   const { login, loading } = useAuth()

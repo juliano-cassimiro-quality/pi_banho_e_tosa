@@ -16,6 +16,7 @@ import RegisterModal from '../components/RegisterModal'
 import ChatbotWidget from '../components/ChatbotWidget'
 import LandingScheduleWidget from '../components/LandingScheduleWidget'
 import useAuth from '../hooks/useAuth'
+import { getDefaultPath } from '../utils/navigation'
 
 const heroStats = [
   { label: 'Pets atendidos', value: '12 mil+' },
@@ -133,10 +134,7 @@ export default function LandingPage () {
   const [chatSignal, setChatSignal] = useState(0)
   const [pendingSchedule, setPendingSchedule] = useState(null)
 
-  const defaultPath = useMemo(
-    () => (user?.role === 'profissional' ? '/app/gestao' : '/app/agendamentos'),
-    [user?.role]
-  )
+  const defaultPath = useMemo(() => getDefaultPath(user?.role), [user?.role])
 
   const navigateWithPrefill = (path, prefill) => {
     if (prefill) {

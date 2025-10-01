@@ -10,6 +10,7 @@ import AppointmentsPage from '../pages/AppointmentsPage'
 import DashboardPage from '../pages/DashboardPage'
 import ManagementPage from '../pages/ManagementPage'
 import LandingPage from '../pages/LandingPage'
+import { getDefaultNestedPath, getDefaultPath } from '../utils/navigation'
 
 function ProtectedRoute ({ children }) {
   const { isAuthenticated } = useAuth()
@@ -22,16 +23,25 @@ function ProtectedRoute ({ children }) {
 function PublicOnlyRoute ({ children }) {
   const { isAuthenticated, user } = useAuth()
   if (isAuthenticated) {
-    const defaultPath = user?.role === 'profissional' ? '/app/gestao' : '/app/agendamentos'
+    const defaultPath = getDefaultPath(user?.role)
     return <Navigate to={defaultPath} replace />
+  }
+  return children
+}
+
+function RoleRoute ({ roles, children }) {
+  const { user } = useAuth()
+  const allowed = roles.includes(user?.role)
+  if (!allowed) {
+    return <Navigate to={getDefaultPath(user?.role)} replace />
   }
   return children
 }
 
 export default function AppRoutes () {
   const { user, isAuthenticated } = useAuth()
-  const defaultNestedPath = user?.role === 'profissional' ? 'gestao' : 'agendamentos'
-  const defaultAuthenticatedPath = `/app/${defaultNestedPath}`
+  const defaultNestedPath = getDefaultNestedPath(user?.role)
+  const defaultAuthenticatedPath = getDefaultPath(user?.role)
   const fallbackPath = isAuthenticated ? defaultAuthenticatedPath : '/'
 
   return (
@@ -65,8 +75,22 @@ export default function AppRoutes () {
         <Route path="agendamentos" element={<AppointmentsPage />} />
         <Route path="agendar" element={<SchedulePage />} />
         <Route path="pets" element={<PetsPage />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="gestao" element={<ManagementPage />} />
+        <Route
+          path="dashboard"
+          element={(
+            <RoleRoute roles={['admin']}>
+              <DashboardPage />
+            </RoleRoute>
+          )}
+        />
+        <Route
+          path="gestao"
+          element={(
+            <RoleRoute roles={['profissional', 'admin']}>
+              <ManagementPage />
+            </RoleRoute>
+          )}
+        />
       </Route>
       <Route path="*" element={<Navigate to={fallbackPath} replace />} />
     </Routes>
