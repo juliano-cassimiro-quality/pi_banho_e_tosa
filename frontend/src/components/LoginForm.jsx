@@ -4,10 +4,9 @@ import Input from './Input'
 import Button from './Button'
 import useAuth from '../hooks/useAuth'
 import api from '../services/api'
+import { getDefaultPath } from '../utils/navigation'
 
-const getDefaultPath = role => (role === 'profissional' ? '/app/gestao' : '/app/agendamentos')
-
-export default function LoginForm ({ onSuccess, showRegisterLink = true }) {
+export default function LoginForm ({ onSuccess, showRegisterLink = true, onOpenRegister }) {
   const { login, loading } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', senha: '' })
@@ -71,7 +70,7 @@ export default function LoginForm ({ onSuccess, showRegisterLink = true }) {
           onChange={handleChange}
           required
         />
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-sm font-medium text-danger-500">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Entrando...' : 'Entrar'}
         </Button>
@@ -80,17 +79,27 @@ export default function LoginForm ({ onSuccess, showRegisterLink = true }) {
         <button
           type="button"
           onClick={handleRecovery}
-          className="font-medium text-primary-600 transition hover:text-primary-700"
+          className="font-medium text-accent-400 transition hover:text-accent-300"
         >
           Esqueci minha senha
         </button>
-        {recoveryMessage && <p className="text-xs text-slate-500">{recoveryMessage}</p>}
+        {recoveryMessage && <p className="text-xs text-neutral-400">{recoveryMessage}</p>}
         {showRegisterLink && (
-          <p className="text-slate-500">
+          <p className="text-neutral-400">
             Ainda não possui conta?{' '}
-            <Link to="/cadastro" className="font-medium text-primary-600 hover:text-primary-700">
-              Cadastre-se
-            </Link>
+            {onOpenRegister ? (
+              <button
+                type="button"
+                onClick={onOpenRegister}
+                className="font-medium text-accent-400 transition hover:text-accent-300"
+              >
+                Cadastre-se
+              </button>
+            ) : (
+              <Link to="/cadastro" className="font-medium text-accent-400 hover:text-accent-300">
+                Cadastre-se
+              </Link>
+            )}
           </p>
         )}
       </div>

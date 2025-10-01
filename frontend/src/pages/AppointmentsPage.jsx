@@ -78,7 +78,7 @@ export default function AppointmentsPage () {
         description="Acompanhe o status dos agendamentos, reagende ou cancele quando necessário."
       />
       <Card>
-        {message && <p className="mb-4 text-sm text-slate-500">{message}</p>}
+        {message && <p className="mb-4 text-sm text-neutral-300">{message}</p>}
         <Table
           columns={columns}
           data={agendamentos.map(item => ({

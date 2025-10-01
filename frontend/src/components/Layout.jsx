@@ -5,17 +5,26 @@ import { Disclosure } from '@headlessui/react'
 import useAuth from '../hooks/useAuth'
 import Button from './Button'
 import ChatbotWidget from './ChatbotWidget'
+import clsx from 'clsx'
 
 const clientNavigation = [
   { name: 'Agendamentos', to: '/app/agendamentos' },
   { name: 'Agendar serviço', to: '/app/agendar' },
-  { name: 'Pets', to: '/app/pets' },
-  { name: 'Dashboard', to: '/app/dashboard' }
+  { name: 'Pets', to: '/app/pets' }
 ]
 
 const professionalNavigation = [
   { name: 'Gestão', to: '/app/gestao' },
-  { name: 'Dashboard', to: '/app/dashboard' }
+  { name: 'Agendamentos', to: '/app/agendamentos' },
+  { name: 'Pets', to: '/app/pets' }
+]
+
+const adminNavigation = [
+  { name: 'Dashboard', to: '/app/dashboard' },
+  { name: 'Agendamentos', to: '/app/agendamentos' },
+  { name: 'Agendar serviço', to: '/app/agendar' },
+  { name: 'Pets', to: '/app/pets' },
+  { name: 'Gestão', to: '/app/gestao' }
 ]
 
 function NavItem ({ item }) {
@@ -23,9 +32,12 @@ function NavItem ({ item }) {
     <NavLink
       to={item.to}
       className={({ isActive }) =>
-        `rounded-md px-3 py-2 text-sm font-medium transition ${
-          isActive ? 'bg-primary-100 text-primary-700' : 'text-slate-600 hover:bg-slate-100'
-        }`
+        clsx(
+          'rounded-full px-4 py-2 text-sm font-semibold transition',
+          isActive
+            ? 'bg-accent-500 text-white shadow-elevated'
+            : 'text-neutral-300 hover:bg-surface-100/70 hover:text-white'
+        )
       }
     >
       {item.name}
@@ -39,66 +51,106 @@ export default function Layout () {
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/')
   }
 
-  const navigationItems = user?.role === 'profissional' ? professionalNavigation : clientNavigation
+  const navigationItems =
+    user?.role === 'admin'
+      ? adminNavigation
+      : user?.role === 'profissional'
+        ? professionalNavigation
+        : clientNavigation
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Disclosure as="nav" className="border-b border-slate-200 bg-white shadow-sm">
-        {() => (
-          <>
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="flex h-16 items-center justify-between">
+    <div className="relative min-h-screen overflow-hidden bg-ink-900 text-neutral-100">
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-70"
+        aria-hidden="true"
+        style={{
+          backgroundImage:
+            'radial-gradient(40% 60% at 0% 0%, rgba(124, 109, 255, 0.25), transparent), radial-gradient(50% 70% at 100% 15%, rgba(60, 66, 115, 0.35), transparent)',
+          backgroundColor: '#050611'
+        }}
+      />
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <Disclosure as="header" className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+          {() => (
+            <>
+              <div className="flex items-center justify-between rounded-[32px] border border-neutral-600/40 bg-surface-200/70 px-5 py-4 shadow-card backdrop-blur">
                 <div className="flex items-center gap-6">
-                  <div className="text-lg font-semibold text-primary-600">Banho &amp; Tosa</div>
-                  <div className="hidden gap-2 md:flex">
+                  <div className="flex items-center gap-3 text-lg font-semibold text-white">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-500 text-xl font-bold text-white shadow-elevated">
+                      BT
+                    </span>
+                    Espaço Banho &amp; Tosa
+                  </div>
+                  <div className="hidden items-center gap-2 md:flex">
                     {navigationItems.map(item => (
                       <NavItem key={item.name} item={item} />
                     ))}
                   </div>
                 </div>
                 <div className="hidden items-center gap-4 md:flex">
-                  <span className="text-sm text-slate-600">Olá, {user?.nome}</span>
-                  <Button variant="secondary" onClick={handleLogout}>Sair</Button>
+                  <div className="text-right">
+                    <p className="text-xs uppercase tracking-wide text-neutral-400">Bem-vindo</p>
+                    <p className="text-sm font-semibold text-white">{user?.nome}</p>
+                  </div>
+                  <Button variant="secondary" onClick={handleLogout} className="rounded-full px-5 py-2">
+                    Sair
+                  </Button>
                 </div>
                 <div className="flex md:hidden">
-                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <Disclosure.Button className="inline-flex items-center justify-center rounded-2xl border border-neutral-600/40 bg-surface-100/70 p-2 text-neutral-300 shadow-card focus:outline-none focus:ring-2 focus:ring-accent-400">
                     <Bars3Icon className="h-6 w-6" />
                   </Disclosure.Button>
                 </div>
               </div>
-            </div>
-            <Disclosure.Panel className="space-y-1 border-t border-slate-200 bg-white px-2 pb-3 pt-2 md:hidden">
-              {navigationItems.map(item => (
-                <NavLink
-                  key={item.name}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `block rounded-md px-3 py-2 text-base font-medium ${
-                      isActive ? 'bg-primary-100 text-primary-700' : 'text-slate-600 hover:bg-slate-100'
-                    }`
-                  }
+              <Disclosure.Panel className="mt-3 space-y-2 rounded-3xl border border-neutral-600/40 bg-surface-200/80 p-4 shadow-card backdrop-blur md:hidden">
+                {navigationItems.map(item => (
+                  <NavLink
+                    key={item.name}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      clsx(
+                        'block rounded-2xl px-4 py-2 text-base font-medium transition',
+                        isActive
+                          ? 'bg-accent-500 text-white shadow-elevated'
+                          : 'text-neutral-300 hover:bg-surface-100/70 hover:text-white'
+                      )
+                    }
+                  >
+                    {item.name}
+                  </NavLink>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="block w-full rounded-2xl border border-danger-500/30 px-4 py-2 text-center text-base font-medium text-danger-500 transition hover:bg-danger-500/10"
                 >
-                  {item.name}
-                </NavLink>
-              ))}
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-red-600 hover:bg-red-50"
-              >
-                Sair
-              </button>
-            </Disclosure.Panel>
-          </>
-        )}
-      </Disclosure>
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Outlet />
-      </main>
-      <ChatbotWidget />
+                  Sair
+                </button>
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+          <div className="rounded-[32px] border border-neutral-600/40 bg-surface-200/70 p-8 shadow-elevated backdrop-blur">
+            <Outlet />
+          </div>
+        </main>
+
+        <footer className="border-t border-neutral-700/60 bg-surface-200/60 py-6 backdrop-blur">
+          <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 text-sm text-neutral-400 sm:flex-row sm:px-6 lg:px-8">
+            <p>© {new Date().getFullYear()} Espaço Banho &amp; Tosa. Cuidado premium em cada detalhe.</p>
+            <p className="flex items-center gap-2 text-neutral-300">
+              <span className="font-semibold text-accent-400">Precisa de ajuda?</span>
+              Converse com a Luma pelo chat.
+            </p>
+          </div>
+        </footer>
+        <ChatbotWidget />
+      </div>
     </div>
   )
 }

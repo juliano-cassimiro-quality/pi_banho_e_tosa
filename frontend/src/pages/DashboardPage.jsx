@@ -4,7 +4,6 @@ import StatsCard from '../components/StatsCard'
 import Card from '../components/Card'
 import Table from '../components/Table'
 import api from '../services/api'
-import dayjs from 'dayjs'
 import useAuth from '../hooks/useAuth'
 
 const columns = [
@@ -18,34 +17,41 @@ export default function DashboardPage () {
   const { user } = useAuth()
   const [stats, setStats] = useState(null)
   const [recent, setRecent] = useState([])
+  const [error, setError] = useState('')
+  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     const fetchData = async () => {
-      const [statsRes, agendamentosRes] = await Promise.all([
-        api.get('/admin/dashboard'),
-        api.get(`/agendamentos/clientes/${user.id_cliente}`)
-      ])
-      setStats(statsRes.data)
-      setRecent(
-        agendamentosRes.data
-          .slice(0, 5)
-          .map(item => ({
-            ...item,
-            data: dayjs(item.data_horario).format('DD/MM/YYYY HH:mm'),
-            servico: item.nome_servico,
-            profissional: item.profissional,
-            status: item.status
-          }))
-      )
+      setError('')
+      try {
+        const { data } = await api.get('/admin/dashboard')
+        setStats(data)
+        setRecent([])
+      } catch (err) {
+        console.error('Erro ao carregar dados do dashboard', err)
+        setError('Não foi possível carregar os indicadores agora. Tente novamente mais tarde.')
+      }
     }
-    if (user?.id_cliente) {
+    if (isAdmin) {
       fetchData()
     }
-  }, [user])
+  }, [isAdmin])
+
+  if (!isAdmin) {
+    return (
+      <div className="space-y-4 text-center">
+        <PageHeader title="Acesso restrito" description="Somente administradores podem visualizar este painel." />
+        <p className="text-sm text-neutral-400">
+          Utilize a landing page ou o fluxo de agendamento rápido para acompanhar seus atendimentos.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div>
-      <PageHeader title="Painel" description="Acompanhe os principais indicadores do sistema." />
+      <PageHeader title="Painel administrativo" description="Acompanhe os principais indicadores do espaço." />
+      {error && <p className="mb-4 text-sm font-medium text-danger-500">{error}</p>}
       {stats && (
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           <StatsCard label="Clientes" value={stats.totalClientes} />
@@ -56,8 +62,12 @@ export default function DashboardPage () {
           <StatsCard label="Faltas" value={stats.totalFaltas} color="red" />
         </div>
       )}
-      <Card className="mt-8" title="Agendamentos recentes">
-        <Table columns={columns} data={recent} emptyMessage="Nenhum agendamento encontrado." />
+      <Card className="mt-8" title="Últimos agendamentos">
+        <Table
+          columns={columns}
+          data={recent}
+          emptyMessage="Conecte seu ERP ou cadastre agendamentos para visualizar aqui."
+        />
       </Card>
     </div>
   )
