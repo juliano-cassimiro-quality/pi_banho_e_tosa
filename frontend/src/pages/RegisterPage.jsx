@@ -9,7 +9,7 @@ export default function RegisterPage () {
         <div className="space-y-3 text-center">
           <h1 className="text-3xl font-semibold text-white">Comece sua experiência premium</h1>
           <p className="text-sm text-neutral-400">
-            Crie sua conta para acompanhar agendamentos, cadastrar pets e acessar o dashboard completo da unidade.
+            Crie sua conta para acompanhar agendamentos, cadastrar pets e organizar os cuidados do seu animal em um só lugar.
           </p>
         </div>
         <RegisterForm showLoginLink={false} />

@@ -4,7 +4,6 @@ import { Bars3Icon } from '@heroicons/react/24/outline'
 import { Disclosure } from '@headlessui/react'
 import useAuth from '../hooks/useAuth'
 import Button from './Button'
-import ChatbotWidget from './ChatbotWidget'
 import clsx from 'clsx'
 
 const clientNavigation = [
@@ -14,17 +13,9 @@ const clientNavigation = [
 ]
 
 const professionalNavigation = [
-  { name: 'Gestão', to: '/app/gestao' },
+  { name: 'Agenda do dia', to: '/app/gestao' },
   { name: 'Agendamentos', to: '/app/agendamentos' },
   { name: 'Pets', to: '/app/pets' }
-]
-
-const adminNavigation = [
-  { name: 'Dashboard', to: '/app/dashboard' },
-  { name: 'Agendamentos', to: '/app/agendamentos' },
-  { name: 'Agendar serviço', to: '/app/agendar' },
-  { name: 'Pets', to: '/app/pets' },
-  { name: 'Gestão', to: '/app/gestao' }
 ]
 
 function NavItem ({ item }) {
@@ -54,12 +45,7 @@ export default function Layout () {
     navigate('/')
   }
 
-  const navigationItems =
-    user?.role === 'admin'
-      ? adminNavigation
-      : user?.role === 'profissional'
-        ? professionalNavigation
-        : clientNavigation
+  const navigationItems = user?.role === 'profissional' ? professionalNavigation : clientNavigation
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-ink-900 text-neutral-100">
@@ -143,13 +129,11 @@ export default function Layout () {
         <footer className="border-t border-neutral-700/60 bg-surface-200/60 py-6 backdrop-blur">
           <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-3 px-4 text-sm text-neutral-400 sm:flex-row sm:px-6 lg:px-8">
             <p>© {new Date().getFullYear()} Espaço Banho &amp; Tosa. Cuidado premium em cada detalhe.</p>
-            <p className="flex items-center gap-2 text-neutral-300">
-              <span className="font-semibold text-accent-400">Precisa de ajuda?</span>
-              Converse com a Luma pelo chat.
+            <p className="text-neutral-300">
+              Atendimento realizado com todo cuidado para cada pet e tutor.
             </p>
           </div>
         </footer>
-        <ChatbotWidget />
       </div>
     </div>
   )
