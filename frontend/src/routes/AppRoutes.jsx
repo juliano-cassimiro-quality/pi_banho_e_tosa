@@ -9,6 +9,7 @@ import SchedulePage from '../pages/SchedulePage'
 import AppointmentsPage from '../pages/AppointmentsPage'
 import DashboardPage from '../pages/DashboardPage'
 import ManagementPage from '../pages/ManagementPage'
+import LandingPage from '../pages/LandingPage'
 
 function ProtectedRoute ({ children }) {
   const { isAuthenticated } = useAuth()
@@ -21,17 +22,21 @@ function ProtectedRoute ({ children }) {
 function PublicOnlyRoute ({ children }) {
   const { isAuthenticated, user } = useAuth()
   if (isAuthenticated) {
-    return <Navigate to={user?.role === 'profissional' ? '/gestao' : '/agendamentos'} replace />
+    const defaultPath = user?.role === 'profissional' ? '/app/gestao' : '/app/agendamentos'
+    return <Navigate to={defaultPath} replace />
   }
   return children
 }
 
 export default function AppRoutes () {
-  const { user } = useAuth()
-  const defaultAuthenticatedPath = user?.role === 'profissional' ? '/gestao' : '/agendamentos'
+  const { user, isAuthenticated } = useAuth()
+  const defaultNestedPath = user?.role === 'profissional' ? 'gestao' : 'agendamentos'
+  const defaultAuthenticatedPath = `/app/${defaultNestedPath}`
+  const fallbackPath = isAuthenticated ? defaultAuthenticatedPath : '/'
 
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route
         path="/login"
         element={(
@@ -49,21 +54,21 @@ export default function AppRoutes () {
         )}
       />
       <Route
-        path="/"
+        path="/app"
         element={(
           <ProtectedRoute>
             <Layout />
           </ProtectedRoute>
         )}
       >
-        <Route index element={<Navigate to={defaultAuthenticatedPath} replace />} />
+        <Route index element={<Navigate to={defaultNestedPath} replace />} />
         <Route path="agendamentos" element={<AppointmentsPage />} />
         <Route path="agendar" element={<SchedulePage />} />
         <Route path="pets" element={<PetsPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="gestao" element={<ManagementPage />} />
       </Route>
-      <Route path="*" element={<Navigate to={defaultAuthenticatedPath} replace />} />
+      <Route path="*" element={<Navigate to={fallbackPath} replace />} />
     </Routes>
   )
 }

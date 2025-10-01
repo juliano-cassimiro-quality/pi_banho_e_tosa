@@ -7,6 +7,7 @@ import agendamentosRoutes from './agendamentos.routes.js'
 import profissionaisRoutes from './profissionais.routes.js'
 import servicosRoutes from './servicos.routes.js'
 import adminRoutes from './admin.routes.js'
+import chatbotRoutes from './chatbot.routes.js'
 
 const router = Router()
 
@@ -17,5 +18,6 @@ router.use('/agendamentos', agendamentosRoutes)
 router.use('/profissionais', profissionaisRoutes)
 router.use('/servicos', servicosRoutes)
 router.use('/admin', adminRoutes)
+router.use('/chatbot', chatbotRoutes)
 
 export default router

@@ -4,17 +4,18 @@ import { Bars3Icon } from '@heroicons/react/24/outline'
 import { Disclosure } from '@headlessui/react'
 import useAuth from '../hooks/useAuth'
 import Button from './Button'
+import ChatbotWidget from './ChatbotWidget'
 
 const clientNavigation = [
-  { name: 'Agendamentos', to: '/agendamentos' },
-  { name: 'Agendar serviço', to: '/agendar' },
-  { name: 'Pets', to: '/pets' },
-  { name: 'Dashboard', to: '/dashboard' }
+  { name: 'Agendamentos', to: '/app/agendamentos' },
+  { name: 'Agendar serviço', to: '/app/agendar' },
+  { name: 'Pets', to: '/app/pets' },
+  { name: 'Dashboard', to: '/app/dashboard' }
 ]
 
 const professionalNavigation = [
-  { name: 'Gestão', to: '/gestao' },
-  { name: 'Dashboard', to: '/dashboard' }
+  { name: 'Gestão', to: '/app/gestao' },
+  { name: 'Dashboard', to: '/app/dashboard' }
 ]
 
 function NavItem ({ item }) {
@@ -97,6 +98,7 @@ export default function Layout () {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Outlet />
       </main>
+      <ChatbotWidget />
     </div>
   )
 }
