@@ -12,23 +12,24 @@ const columns = [
   { Header: 'Espécie', accessor: 'especie' },
   { Header: 'Porte', accessor: 'porte' },
   { Header: 'Idade', accessor: 'idade' },
-  { Header: 'Observações', accessor: 'observacoes' }
+  { Header: 'Saúde', accessor: 'observacoesSaude' },
+  { Header: 'Preferências', accessor: 'preferencias' }
 ]
 
 export default function PetsPage () {
   const { user } = useAuth()
   const [pets, setPets] = useState([])
-  const [form, setForm] = useState({ nome: '', especie: '', porte: '', idade: '', observacoes: '' })
+  const [form, setForm] = useState({ nome: '', especie: '', porte: '', idade: '', observacoesSaude: '', preferencias: '' })
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState('')
 
   const fetchPets = async () => {
-    const { data } = await api.get(`/animais/cliente/${user.id_cliente}`)
+    const { data } = await api.get('/pets')
     setPets(data)
   }
 
   useEffect(() => {
-    if (user?.id_cliente) {
+    if (user) {
       fetchPets()
     }
   }, [user])
@@ -42,8 +43,11 @@ export default function PetsPage () {
     setLoading(true)
     setFeedback('')
     try {
-      await api.post('/animais', { ...form, idCliente: user.id_cliente, idade: Number(form.idade) || null })
-      setForm({ nome: '', especie: '', porte: '', idade: '', observacoes: '' })
+      await api.post('/pets', {
+        ...form,
+        idade: form.idade ? Number(form.idade) : null
+      })
+      setForm({ nome: '', especie: '', porte: '', idade: '', observacoesSaude: '', preferencias: '' })
       setFeedback('Pet cadastrado com sucesso!')
       fetchPets()
     } catch (err) {
@@ -64,12 +68,21 @@ export default function PetsPage () {
             <Input label="Porte" name="porte" value={form.porte} onChange={handleChange} />
             <Input label="Idade" name="idade" type="number" value={form.idade} onChange={handleChange} />
             <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-              <span>Observações</span>
+              <span>Observações de saúde</span>
               <textarea
-                name="observacoes"
-                value={form.observacoes}
+                name="observacoesSaude"
+                value={form.observacoesSaude}
                 onChange={handleChange}
-                className="min-h-[120px] rounded-2xl border border-neutral-600/40 bg-surface-100/70 px-4 py-3 text-sm text-neutral-100 shadow-card focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/40"
+                className="min-h-[100px] rounded-2xl border border-neutral-600/40 bg-surface-100/70 px-4 py-3 text-sm text-neutral-100 shadow-card focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/40"
+              />
+            </label>
+            <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+              <span>Preferências</span>
+              <textarea
+                name="preferencias"
+                value={form.preferencias}
+                onChange={handleChange}
+                className="min-h-[100px] rounded-2xl border border-neutral-600/40 bg-surface-100/70 px-4 py-3 text-sm text-neutral-100 shadow-card focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/40"
               />
             </label>
             {feedback && <p className="text-sm text-neutral-300">{feedback}</p>}

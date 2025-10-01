@@ -242,7 +242,6 @@ export default function LandingPage () {
               isAuthenticated={isAuthenticated}
               user={user}
               onRequireAuth={handleRequireAuth}
-              onShowChat={handleOpenChat}
             />
           </section>
 

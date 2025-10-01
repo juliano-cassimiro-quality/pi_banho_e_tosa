@@ -1,6 +1,46 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { ChatBubbleOvalLeftEllipsisIcon, PaperAirplaneIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import api from '../services/api'
+const KNOWLEDGE_BASE = [
+  {
+    match: ['serviço', 'servicos', 'banho', 'tosa'],
+    response:
+      'Oferecemos banho relaxante com hidratação, tosa higiênica e o combo banho + tosa. Todos incluem checagem rápida de saúde, produtos hipoalergênicos e notificações em tempo real.'
+  },
+  {
+    match: ['preço', 'preço', 'valor', 'quanto'],
+    response:
+      'Os valores variam conforme o porte do pet: banho a partir de R$ 60, tosa a partir de R$ 85 e o combo completo a partir de R$ 130. Clientes frequentes contam com pacotes especiais.'
+  },
+  {
+    match: ['pagamento', 'pagar', 'pix', 'cartão'],
+    response:
+      'Aceitamos cartões de crédito, débito, PIX e carteiras digitais. Também é possível deixar o pagamento salvo para agilizar os próximos agendamentos.'
+  },
+  {
+    match: ['horário', 'funcionamento', 'agenda', 'disponibilidade'],
+    response:
+      'Atendemos de segunda a sábado, das 9h às 18h. Pelo botão de agendamento você confere, em tempo real, os horários livres do profissional responsável.'
+  },
+  {
+    match: ['preparar', 'antes', 'orientação'],
+    response:
+      'Recomendamos alimentar o pet com no mínimo 2h de antecedência, trazer carteira de vacinação atualizada e informar alergias ou sensibilidades especiais durante o agendamento.'
+  }
+]
+
+function simularResposta (pergunta) {
+  const texto = pergunta.toLowerCase()
+  const encontrado = KNOWLEDGE_BASE.find(item => item.match.some(chave => texto.includes(chave)))
+  if (encontrado) {
+    return Promise.resolve({ texto: encontrado.response, sugestoes: DEFAULT_SUGGESTIONS })
+  }
+
+  return Promise.resolve({
+    texto:
+      'Posso ajudar com detalhes sobre serviços, valores, horários e preparos para o atendimento. Deseja que eu abra a agenda para você escolher um horário?',
+    sugestoes: DEFAULT_SUGGESTIONS
+  })
+}
 
 const INITIAL_MESSAGE =
   'Olá! Eu sou a Luma, assistente virtual da Banho & Tosa Premium. Posso te contar sobre nossos serviços, preços, horários, promoções ou mesmo abrir a agenda para você. O que deseja saber primeiro?'
@@ -41,10 +81,10 @@ export default function ChatbotWidget ({ initialOpen = false, openSignal = 0 }) 
     setLoading(true)
 
     try {
-      const { data } = await api.post('/chatbot', { message: trimmed })
-      setMessages(prev => [...prev, { sender: 'bot', text: data.reply }])
-      if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
-        setSuggestions(data.suggestions)
+      const resposta = await simularResposta(trimmed)
+      setMessages(prev => [...prev, { sender: 'bot', text: resposta.texto }])
+      if (Array.isArray(resposta.sugestoes) && resposta.sugestoes.length > 0) {
+        setSuggestions(resposta.sugestoes)
       }
     } catch (error) {
       console.error(error)

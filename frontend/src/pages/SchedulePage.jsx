@@ -8,17 +8,20 @@ import useAuth from '../hooks/useAuth'
 import api from '../services/api'
 import dayjs from 'dayjs'
 
+const SERVICOS = [
+  { value: 'BANHO', label: 'Banho completo' },
+  { value: 'TOSA', label: 'Tosa higiênica' },
+  { value: 'BANHO_E_TOSA', label: 'Banho + tosa completa' }
+]
+
 export default function SchedulePage () {
   const { user } = useAuth()
   const location = useLocation()
   const [pets, setPets] = useState([])
-  const [servicos, setServicos] = useState([])
-  const [profissionais, setProfissionais] = useState([])
   const [slots, setSlots] = useState([])
   const [form, setForm] = useState({
     idAnimal: '',
-    idServico: '',
-    idProfissional: '',
+    tipoServico: SERVICOS[0].value,
     data: dayjs().format('YYYY-MM-DD'),
     horario: ''
   })
@@ -31,77 +34,32 @@ export default function SchedulePage () {
   const prefill = location.state?.prefill
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      const [petsRes, servicosRes, profRes] = await Promise.all([
-        api.get(`/animais/cliente/${user.id_cliente}`),
-        api.get('/servicos'),
-        api.get('/profissionais')
-      ])
-      setPets(petsRes.data)
-      setServicos(servicosRes.data)
-      setProfissionais(profRes.data)
-      if (petsRes.data[0]) {
-        setForm(prev => ({ ...prev, idAnimal: petsRes.data[0].id_animal }))
-      }
-      if (servicosRes.data[0]) {
-        setForm(prev => ({ ...prev, idServico: servicosRes.data[0].id_servico }))
-      }
-      if (profRes.data[0]) {
-        setForm(prev => ({ ...prev, idProfissional: profRes.data[0].id_profissional }))
+    const fetchPets = async () => {
+      const { data } = await api.get('/pets')
+      setPets(data)
+      if (data[0]) {
+        setForm(prev => ({ ...prev, idAnimal: data[0].id }))
       }
     }
-    if (user?.id_cliente) {
-      fetchInitialData()
+    if (user) {
+      fetchPets()
     }
   }, [user])
 
   useEffect(() => {
-    if (!prefill) return
-    if (!servicos.length || !profissionais.length) return
-    if (appliedPrefill === prefill) return
-
-    setForm(prev => {
-      const next = { ...prev }
-      if (prefill.data) {
-        next.data = prefill.data
-      }
-      if (prefill.horario) {
-        next.horario = prefill.horario
-      }
-
-      if (prefill.idServico || prefill.nomeServico) {
-        const matchedServico = servicos.find(servico => {
-          const idServico = servico.id_servico?.toString()
-          return (
-            idServico === prefill.idServico?.toString() ||
-            servico.nome_servico === prefill.nomeServico ||
-            servico.nome === prefill.nomeServico
-          )
-        })
-        if (matchedServico?.id_servico) {
-          next.idServico = matchedServico.id_servico
-        }
-      }
-
-      if (prefill.idProfissional || prefill.nomeProfissional) {
-        const matchedProfissional = profissionais.find(profissional => {
-          const idProf = profissional.id_profissional?.toString()
-          return idProf === prefill.idProfissional?.toString() || profissional.nome === prefill.nomeProfissional
-        })
-        if (matchedProfissional?.id_profissional) {
-          next.idProfissional = matchedProfissional.id_profissional
-        }
-      }
-
-      return next
-    })
-
+    if (!prefill || appliedPrefill === prefill) return
+    setForm(prev => ({
+      ...prev,
+      data: prefill.data || prev.data,
+      horario: prefill.horario || prev.horario,
+      tipoServico: prefill.tipoServico || prev.tipoServico
+    }))
     setAppliedPrefill(prefill)
-  }, [prefill, servicos, profissionais, appliedPrefill])
+  }, [prefill, appliedPrefill])
 
   const canLoadSlots = useMemo(() => {
-    return form.idServico && form.idProfissional && form.data
-  }, [form.idServico, form.idProfissional, form.data])
+    return Boolean(form.tipoServico && form.data)
+  }, [form.tipoServico, form.data])
 
   useEffect(() => {
     const fetchSlots = async () => {
@@ -109,26 +67,26 @@ export default function SchedulePage () {
       setLoadingSlots(true)
       try {
         const params = new URLSearchParams({
-          idProfissional: form.idProfissional,
-          data: form.data,
-          idServico: form.idServico
+          date: form.data,
+          serviceType: form.tipoServico
         })
-        const { data } = await api.get(`/agendamentos/disponiveis?${params.toString()}`)
+        const { data } = await api.get(`/appointments/availability?${params.toString()}`)
         setSlots(data)
       } catch (error) {
-        console.error(error)
+        console.error('Erro ao carregar disponibilidade', error)
+        setSlots([])
       } finally {
         setLoadingSlots(false)
       }
     }
     fetchSlots()
-  }, [form.idProfissional, form.idServico, form.data, canLoadSlots])
+  }, [canLoadSlots, form.tipoServico, form.data])
 
   const handleChange = event => {
     const { name, value } = event.target
     setForm(prev => {
       const updated = { ...prev, [name]: value }
-      if (name === 'data') {
+      if (name === 'data' || name === 'tipoServico') {
         updated.horario = ''
       }
       return updated
@@ -138,30 +96,45 @@ export default function SchedulePage () {
   const handleSubmit = async event => {
     event.preventDefault()
     setFeedback('')
+
+    if (!form.idAnimal) {
+      setFeedback('Cadastre um pet para realizar o agendamento.')
+      return
+    }
+
+    if (!form.horario) {
+      setFeedback('Selecione um horário disponível para concluir o agendamento.')
+      return
+    }
+
     setSaving(true)
     try {
-      await api.post('/agendamentos', {
-        idCliente: user.id_cliente,
-        idAnimal: form.idAnimal,
-        idServico: form.idServico,
-        idProfissional: form.idProfissional,
-        dataHorario: form.horario,
-        observacoes
+      await api.post('/appointments', {
+        animalId: form.idAnimal,
+        tipoServico: form.tipoServico,
+        dataHora: form.horario,
+        observacoesCliente: observacoes
       })
       setFeedback('Agendamento criado com sucesso!')
       setObservacoes('')
     } catch (err) {
-      setFeedback(err.response?.data?.error || 'Não foi possível criar o agendamento')
+      setFeedback(err.response?.data?.message || 'Não foi possível criar o agendamento')
     } finally {
       setSaving(false)
     }
   }
 
+  const horariosDisponiveis = slots.map(slot => ({
+    inicio: slot.inicio,
+    fim: slot.fim,
+    label: `${dayjs(slot.inicio).format('DD/MM')} • ${dayjs(slot.inicio).format('HH:mm')} - ${dayjs(slot.fim).format('HH:mm')}`
+  }))
+
   return (
     <div>
       <PageHeader
         title="Agendar serviço"
-        description="Escolha o pet, serviço, profissional e horário disponível para confirmar o atendimento."
+        description="Escolha o pet, o tipo de serviço e confirme o horário disponível."
       />
       <Card>
         <form className="grid gap-6 md:grid-cols-2" onSubmit={handleSubmit}>
@@ -175,40 +148,23 @@ export default function SchedulePage () {
             >
               <option value="">Selecione</option>
               {pets.map(pet => (
-                <option key={pet.id_animal} value={pet.id_animal}>
+                <option key={pet.id} value={pet.id}>
                   {pet.nome}
                 </option>
               ))}
             </select>
           </label>
           <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-            <span>Serviço</span>
+            <span>Tipo de serviço</span>
             <select
-              name="idServico"
-              value={form.idServico}
+              name="tipoServico"
+              value={form.tipoServico}
               onChange={handleChange}
               className="rounded-2xl border border-neutral-600/40 bg-surface-100/70 px-4 py-3 text-sm text-neutral-100 shadow-card focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/40"
             >
-              <option value="">Selecione</option>
-              {servicos.map(servico => (
-                <option key={servico.id_servico} value={servico.id_servico}>
-                  {servico.nome_servico}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-            <span>Profissional</span>
-            <select
-              name="idProfissional"
-              value={form.idProfissional}
-              onChange={handleChange}
-              className="rounded-2xl border border-neutral-600/40 bg-surface-100/70 px-4 py-3 text-sm text-neutral-100 shadow-card focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-400/40"
-            >
-              <option value="">Selecione</option>
-              {profissionais.map(profissional => (
-                <option key={profissional.id_profissional} value={profissional.id_profissional}>
-                  {profissional.nome}
+              {SERVICOS.map(servico => (
+                <option key={servico.value} value={servico.value}>
+                  {servico.label}
                 </option>
               ))}
             </select>
@@ -216,24 +172,24 @@ export default function SchedulePage () {
           <Input label="Data" type="date" name="data" value={form.data} onChange={handleChange} min={dayjs().format('YYYY-MM-DD')} />
 
           <div className="md:col-span-2">
-            <span className="block text-xs font-semibold uppercase tracking-wide text-neutral-400">Horário disponível</span>
+            <span className="block text-xs font-semibold uppercase tracking-wide text-neutral-400">Horários disponíveis</span>
             <div className="mt-3 flex flex-wrap gap-2">
               {loadingSlots && <p className="text-sm text-neutral-400">Carregando horários...</p>}
-              {!loadingSlots && slots.length === 0 && (
-                <p className="text-sm text-neutral-400">Nenhum horário disponível para os filtros selecionados.</p>
+              {!loadingSlots && horariosDisponiveis.length === 0 && (
+                <p className="text-sm text-neutral-400">Nenhum horário disponível para a data selecionada.</p>
               )}
-              {slots.map(slot => (
+              {horariosDisponiveis.map(slot => (
                 <button
-                  key={slot.start}
+                  key={slot.inicio}
                   type="button"
-                  onClick={() => setForm(prev => ({ ...prev, horario: slot.start }))}
+                  onClick={() => setForm(prev => ({ ...prev, horario: slot.inicio }))}
                   className={`rounded-full border px-3 py-2 text-sm transition ${
-                    form.horario === slot.start
+                    form.horario === slot.inicio
                       ? 'border-accent-400 bg-accent-500 text-white shadow-elevated'
                       : 'border-neutral-600/40 bg-transparent text-neutral-300 hover:border-accent-400 hover:text-white'
                   }`}
                 >
-                  {dayjs(slot.start).format('DD/MM/YYYY HH:mm')}
+                  {slot.label}
                 </button>
               ))}
             </div>
