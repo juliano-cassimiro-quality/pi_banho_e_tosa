@@ -14,6 +14,7 @@ import {
 import LoginModal from '../components/LoginModal'
 import RegisterModal from '../components/RegisterModal'
 import ChatbotWidget from '../components/ChatbotWidget'
+import LandingScheduleWidget from '../components/LandingScheduleWidget'
 import useAuth from '../hooks/useAuth'
 
 const heroStats = [
@@ -130,24 +131,42 @@ export default function LandingPage () {
   const [loginOpen, setLoginOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
   const [chatSignal, setChatSignal] = useState(0)
+  const [pendingSchedule, setPendingSchedule] = useState(null)
 
   const defaultPath = useMemo(
     () => (user?.role === 'profissional' ? '/app/gestao' : '/app/agendamentos'),
     [user?.role]
   )
 
+  const navigateWithPrefill = (path, prefill) => {
+    if (prefill) {
+      const nextPrefill = prefill
+      setPendingSchedule(null)
+      navigate('/app/agendar', { state: { prefill: nextPrefill } })
+    } else {
+      navigate(path || defaultPath)
+    }
+  }
+
   const handleLoginSuccess = ({ defaultPath: path }) => {
     setLoginOpen(false)
-    navigate(path)
+    navigateWithPrefill(path, pendingSchedule)
   }
 
   const handleRegisterSuccess = ({ defaultPath: path }) => {
     setRegisterOpen(false)
-    navigate(path)
+    navigateWithPrefill(path, pendingSchedule)
   }
 
   const handleOpenChat = () => {
     setChatSignal(signal => signal + 1)
+  }
+
+  const handleRequireAuth = prefill => {
+    if (prefill) {
+      setPendingSchedule(prefill)
+    }
+    setLoginOpen(true)
   }
 
   return (
@@ -286,6 +305,13 @@ export default function LandingPage () {
             </div>
           </div>
         </section>
+
+        <LandingScheduleWidget
+          isAuthenticated={isAuthenticated}
+          user={user}
+          onRequireAuth={handleRequireAuth}
+          onShowChat={handleOpenChat}
+        />
 
         <section id="estrutura" className="space-y-12">
           <div className="text-center">

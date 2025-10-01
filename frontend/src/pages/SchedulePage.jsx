@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
@@ -9,6 +10,7 @@ import dayjs from 'dayjs'
 
 export default function SchedulePage () {
   const { user } = useAuth()
+  const location = useLocation()
   const [pets, setPets] = useState([])
   const [servicos, setServicos] = useState([])
   const [profissionais, setProfissionais] = useState([])
@@ -24,6 +26,9 @@ export default function SchedulePage () {
   const [feedback, setFeedback] = useState('')
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [appliedPrefill, setAppliedPrefill] = useState(null)
+
+  const prefill = location.state?.prefill
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -49,6 +54,50 @@ export default function SchedulePage () {
       fetchInitialData()
     }
   }, [user])
+
+  useEffect(() => {
+    if (!prefill) return
+    if (!servicos.length || !profissionais.length) return
+    if (appliedPrefill === prefill) return
+
+    setForm(prev => {
+      const next = { ...prev }
+      if (prefill.data) {
+        next.data = prefill.data
+      }
+      if (prefill.horario) {
+        next.horario = prefill.horario
+      }
+
+      if (prefill.idServico || prefill.nomeServico) {
+        const matchedServico = servicos.find(servico => {
+          const idServico = servico.id_servico?.toString()
+          return (
+            idServico === prefill.idServico?.toString() ||
+            servico.nome_servico === prefill.nomeServico ||
+            servico.nome === prefill.nomeServico
+          )
+        })
+        if (matchedServico?.id_servico) {
+          next.idServico = matchedServico.id_servico
+        }
+      }
+
+      if (prefill.idProfissional || prefill.nomeProfissional) {
+        const matchedProfissional = profissionais.find(profissional => {
+          const idProf = profissional.id_profissional?.toString()
+          return idProf === prefill.idProfissional?.toString() || profissional.nome === prefill.nomeProfissional
+        })
+        if (matchedProfissional?.id_profissional) {
+          next.idProfissional = matchedProfissional.id_profissional
+        }
+      }
+
+      return next
+    })
+
+    setAppliedPrefill(prefill)
+  }, [prefill, servicos, profissionais, appliedPrefill])
 
   const canLoadSlots = useMemo(() => {
     return form.idServico && form.idProfissional && form.data
