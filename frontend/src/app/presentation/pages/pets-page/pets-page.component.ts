@@ -202,7 +202,7 @@ export class PetsPageComponent implements OnInit {
 
   load(): void {
     this.listPetsUseCase.execute().subscribe({
-      next: pets => this.pets.set(pets),
+      next: (pets: Pet[]) => this.pets.set(pets),
       error: () => this.pets.set([])
     });
   }
@@ -214,7 +214,7 @@ export class PetsPageComponent implements OnInit {
 
     this.creating.set(true);
     this.createPetUseCase.execute(this.form.getRawValue()).subscribe({
-      next: pet => {
+      next: (pet: Pet) => {
         this.creating.set(false);
         this.form.reset();
         this.pets.set([...(this.pets() ?? []), pet]);

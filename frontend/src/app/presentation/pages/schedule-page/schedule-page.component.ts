@@ -205,7 +205,7 @@ export class SchedulePageComponent implements OnInit {
 
   load(): void {
     this.listAppointmentsUseCase.execute().subscribe({
-      next: appointments => this.appointments.set(appointments),
+      next: (appointments: Appointment[]) => this.appointments.set(appointments),
       error: () => this.appointments.set([])
     });
   }
@@ -220,7 +220,7 @@ export class SchedulePageComponent implements OnInit {
     this.scheduleAppointmentUseCase
       .execute({ petId, petName, ownerName, service, scheduledAt })
       .subscribe({
-        next: appointment => {
+        next: (appointment: Appointment) => {
           this.creating.set(false);
           this.form.reset();
           this.appointments.set([appointment, ...(this.appointments() ?? [])]);

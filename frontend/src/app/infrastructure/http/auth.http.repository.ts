@@ -21,13 +21,19 @@ export class AuthHttpRepository implements AuthRepository {
   login(email: string, password: string): Observable<User> {
     return this.http
       .post<AuthResponse>(`${this.env.apiUrl}/auth/login`, { email, password })
-      .pipe(tap(response => this.storage.save(response.token)), map(response => ({ ...response.user, token: response.token })));
+      .pipe(
+        tap((response: AuthResponse) => this.storage.save(response.token)),
+        map((response: AuthResponse) => ({ ...response.user, token: response.token }))
+      );
   }
 
   register(name: string, email: string, password: string): Observable<User> {
     return this.http
       .post<AuthResponse>(`${this.env.apiUrl}/auth/register`, { name, email, password })
-      .pipe(tap(response => this.storage.save(response.token)), map(response => ({ ...response.user, token: response.token })));
+      .pipe(
+        tap((response: AuthResponse) => this.storage.save(response.token)),
+        map((response: AuthResponse) => ({ ...response.user, token: response.token }))
+      );
   }
 
   getProfile(): Observable<User> {
