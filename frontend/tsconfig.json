@@ -10,7 +10,13 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "module": "es2022",
+    "moduleResolution": "node",
+    "target": "es2022",
+    "lib": ["es2022", "dom"],
+    "useDefineForClassFields": false,
+    "experimentalDecorators": true
   },
   "angularCompilerOptions": {
     "disableTypeScriptVersionCheck": true

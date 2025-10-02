@@ -135,8 +135,12 @@ export class DashboardPageComponent implements OnInit {
   readonly loading = signal(false);
 
   readonly totalAppointments = computed(() => this.appointments()?.length ?? 0);
-  readonly doneAppointments = computed(() => (this.appointments() ?? []).filter(item => item.status === 'done').length);
-  readonly cancelledAppointments = computed(() => (this.appointments() ?? []).filter(item => item.status === 'cancelled').length);
+  readonly doneAppointments = computed(
+    () => (this.appointments() ?? []).filter((item: Appointment) => item.status === 'done').length
+  );
+  readonly cancelledAppointments = computed(
+    () => (this.appointments() ?? []).filter((item: Appointment) => item.status === 'cancelled').length
+  );
 
   ngOnInit(): void {
     this.load();
@@ -145,7 +149,7 @@ export class DashboardPageComponent implements OnInit {
   load(): void {
     this.loading.set(true);
     this.listAppointmentsUseCase.execute().subscribe({
-      next: appointments => {
+      next: (appointments: Appointment[]) => {
         this.appointments.set(appointments);
         this.loading.set(false);
       },
@@ -158,9 +162,9 @@ export class DashboardPageComponent implements OnInit {
 
   updateStatus(event: { id: string; status: Appointment['status'] }): void {
     this.updateAppointmentStatusUseCase.execute(event.id, event.status).subscribe({
-      next: updated => {
+      next: (updated: Appointment) => {
         const current = this.appointments() ?? [];
-        this.appointments.set(current.map(item => (item.id === updated.id ? updated : item)));
+        this.appointments.set(current.map((item: Appointment) => (item.id === updated.id ? updated : item)));
       }
     });
   }

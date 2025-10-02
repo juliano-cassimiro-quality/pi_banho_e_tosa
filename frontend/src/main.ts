@@ -22,4 +22,4 @@ bootstrapApplication(AppComponent, {
     PET_HTTP_REPOSITORY_PROVIDER,
     APPOINTMENT_HTTP_REPOSITORY_PROVIDER
   ]
-}).catch(err => console.error(err));
+}).catch((err: unknown) => console.error(err));
