@@ -4,11 +4,15 @@ import { Router } from '@angular/router';
 
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 import { MetricCardComponent } from '../../components/metric-card/metric-card.component';
-import { AppointmentListComponent } from '../../components/appointment-list/appointment-list.component';
+import { AppointmentListComponent, AppointmentAction } from '../../components/appointment-list/appointment-list.component';
 import { ListAppointmentsUseCase } from '../../../core/application/use-cases/list-appointments.use-case';
-import { UpdateAppointmentStatusUseCase } from '../../../core/application/use-cases/update-appointment-status.use-case';
+import { CancelAppointmentUseCase } from '../../../core/application/use-cases/cancel-appointment.use-case';
+import { RescheduleAppointmentUseCase } from '../../../core/application/use-cases/reschedule-appointment.use-case';
+import { CompleteAppointmentUseCase } from '../../../core/application/use-cases/complete-appointment.use-case';
 import { LogoutUseCase } from '../../../core/application/use-cases/logout.use-case';
 import { Appointment } from '../../../core/domain/models/appointment';
+import { User } from '../../../core/domain/models/user';
+import { LoadProfileUseCase } from '../../../core/application/use-cases/load-profile.use-case';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -20,15 +24,20 @@ import { Appointment } from '../../../core/domain/models/appointment';
       <header class="intro">
         <div>
           <p class="eyebrow">Panorama geral</p>
-          <h1>Performance da semana</h1>
-          <p class="description">Acompanhe os principais indicadores e atue proativamente nos agendamentos.</p>
+          <h1>Operação integrada ao backend</h1>
+          <p class="description">
+            Acompanhe indicadores chave, visualize agendamentos em tempo real e tome decisões rápidas.
+          </p>
         </div>
-        <button class="refresh" type="button" (click)="load()" [disabled]="loading()">Atualizar</button>
+        <button class="refresh" type="button" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Atualizando...' : 'Atualizar' }}
+        </button>
       </header>
 
       <div class="metrics">
-        <app-metric-card label="Agendamentos" [value]="totalAppointments()" icon="🗓"></app-metric-card>
-        <app-metric-card label="Concluídos" [value]="doneAppointments()" icon="✅"></app-metric-card>
+        <app-metric-card label="Agendados" [value]="scheduledAppointments()" icon="🗓"></app-metric-card>
+        <app-metric-card label="Confirmados" [value]="confirmedAppointments()" icon="✅"></app-metric-card>
+        <app-metric-card label="Concluídos" [value]="completedAppointments()" icon="🎉"></app-metric-card>
         <app-metric-card label="Cancelados" [value]="cancelledAppointments()" icon="⚠️"></app-metric-card>
       </div>
 
@@ -36,10 +45,16 @@ import { Appointment } from '../../../core/domain/models/appointment';
         <header>
           <div>
             <h2>Próximos atendimentos</h2>
-            <p class="description">Altere o status conforme o progresso do atendimento.</p>
+            <p class="description">
+              Todas as ações refletem imediatamente nos endpoints /appointments do backend Spring Boot.
+            </p>
           </div>
         </header>
-        <app-appointment-list [appointments]="appointments()" (change)="updateStatus($event)"></app-appointment-list>
+        <app-appointment-list
+          [appointments]="appointments()"
+          [role]="user()?.role ?? null"
+          (action)="handleAction($event)"
+        ></app-appointment-list>
       </section>
     </section>
   `,
@@ -106,9 +121,6 @@ import { Appointment } from '../../../core/domain/models/appointment';
       }
 
       .panel header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         margin-bottom: 2rem;
       }
 
@@ -118,7 +130,7 @@ import { Appointment } from '../../../core/domain/models/appointment';
 
       @media (max-width: 768px) {
         .panel {
-          padding: 1.5rem;
+          padding: 1.75rem;
         }
       }
     `
@@ -127,22 +139,34 @@ import { Appointment } from '../../../core/domain/models/appointment';
 })
 export class DashboardPageComponent implements OnInit {
   private readonly listAppointmentsUseCase = inject(ListAppointmentsUseCase);
-  private readonly updateAppointmentStatusUseCase = inject(UpdateAppointmentStatusUseCase);
+  private readonly cancelAppointmentUseCase = inject(CancelAppointmentUseCase);
+  private readonly rescheduleAppointmentUseCase = inject(RescheduleAppointmentUseCase);
+  private readonly completeAppointmentUseCase = inject(CompleteAppointmentUseCase);
+  private readonly loadProfileUseCase = inject(LoadProfileUseCase);
   private readonly logoutUseCase = inject(LogoutUseCase);
   private readonly router = inject(Router);
 
   readonly appointments = signal<Appointment[] | null>(null);
+  readonly user = signal<User | null>(null);
   readonly loading = signal(false);
 
-  readonly totalAppointments = computed(() => this.appointments()?.length ?? 0);
-  readonly doneAppointments = computed(
-    () => (this.appointments() ?? []).filter((item: Appointment) => item.status === 'done').length
+  readonly scheduledAppointments = computed(
+    () => (this.appointments() ?? []).filter((item: Appointment) => item.status === 'AGENDADO').length
+  );
+  readonly confirmedAppointments = computed(
+    () => (this.appointments() ?? []).filter((item: Appointment) => item.status === 'CONFIRMADO').length
+  );
+  readonly completedAppointments = computed(
+    () => (this.appointments() ?? []).filter((item: Appointment) => item.status === 'CONCLUIDO').length
   );
   readonly cancelledAppointments = computed(
-    () => (this.appointments() ?? []).filter((item: Appointment) => item.status === 'cancelled').length
+    () => (this.appointments() ?? []).filter((item: Appointment) => item.status === 'CANCELADO').length
   );
 
   ngOnInit(): void {
+    this.loadProfileUseCase.execute().subscribe({
+      next: (user: User) => this.user.set(user)
+    });
     this.load();
   }
 
@@ -160,13 +184,42 @@ export class DashboardPageComponent implements OnInit {
     });
   }
 
-  updateStatus(event: { id: string; status: Appointment['status'] }): void {
-    this.updateAppointmentStatusUseCase.execute(event.id, event.status).subscribe({
-      next: (updated: Appointment) => {
-        const current = this.appointments() ?? [];
-        this.appointments.set(current.map((item: Appointment) => (item.id === updated.id ? updated : item)));
+  handleAction(event: { type: AppointmentAction; appointment: Appointment }): void {
+    const { type, appointment } = event;
+
+    if (type === 'cancel') {
+      const motivo = prompt('Informe o motivo do cancelamento');
+      if (!motivo) {
+        return;
       }
-    });
+      this.cancelAppointmentUseCase.execute({ id: appointment.id, motivo }).subscribe({
+        next: (updated: Appointment) => this.replaceAppointment(updated)
+      });
+      return;
+    }
+
+    if (type === 'reschedule') {
+      const novaDataHora = prompt('Nova data e hora (AAAA-MM-DDTHH:MM)');
+      if (!novaDataHora) {
+        return;
+      }
+      this.rescheduleAppointmentUseCase.execute({ id: appointment.id, novaDataHora }).subscribe({
+        next: (updated: Appointment) => this.replaceAppointment(updated)
+      });
+      return;
+    }
+
+    if (type === 'complete') {
+      const observacoesProfissional = prompt('Observações do atendimento (opcional)') ?? undefined;
+      this.completeAppointmentUseCase.execute({ id: appointment.id, observacoesProfissional }).subscribe({
+        next: (updated: Appointment) => this.replaceAppointment(updated)
+      });
+    }
+  }
+
+  private replaceAppointment(updated: Appointment): void {
+    const current = this.appointments() ?? [];
+    this.appointments.set(current.map((item: Appointment) => (item.id === updated.id ? updated : item)));
   }
 
   logout(): void {

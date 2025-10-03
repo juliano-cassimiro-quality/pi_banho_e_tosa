@@ -9,7 +9,7 @@ import { TokenStorageService } from '../storage/token-storage.service';
 
 interface AuthResponse {
   token: string;
-  user: User;
+  usuario: User;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -18,26 +18,26 @@ export class AuthHttpRepository implements AuthRepository {
   private readonly env = inject(ENVIRONMENT);
   private readonly storage = inject(TokenStorageService);
 
-  login(email: string, password: string): Observable<User> {
+  login(email: string, senha: string): Observable<User> {
     return this.http
-      .post<AuthResponse>(`${this.env.apiUrl}/auth/login`, { email, password })
+      .post<AuthResponse>(`${this.env.apiUrl}/auth/login`, { email, senha })
       .pipe(
         tap((response: AuthResponse) => this.storage.save(response.token)),
-        map((response: AuthResponse) => ({ ...response.user, token: response.token }))
+        map((response: AuthResponse) => ({ ...response.usuario, token: response.token }))
       );
   }
 
-  register(name: string, email: string, password: string): Observable<User> {
+  register(nome: string, telefone: string, email: string, senha: string): Observable<User> {
     return this.http
-      .post<AuthResponse>(`${this.env.apiUrl}/auth/register`, { name, email, password })
+      .post<AuthResponse>(`${this.env.apiUrl}/auth/register`, { nome, telefone, email, senha })
       .pipe(
         tap((response: AuthResponse) => this.storage.save(response.token)),
-        map((response: AuthResponse) => ({ ...response.user, token: response.token }))
+        map((response: AuthResponse) => ({ ...response.usuario, token: response.token }))
       );
   }
 
   getProfile(): Observable<User> {
-    return this.http.get<User>(`${this.env.apiUrl}/auth/me`);
+    return this.http.get<User>(`${this.env.apiUrl}/usuarios/me`);
   }
 
   logout(): void {

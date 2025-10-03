@@ -7,7 +7,9 @@ import { AppHeaderComponent } from '../../components/app-header/app-header.compo
 import { ListPetsUseCase } from '../../../core/application/use-cases/list-pets.use-case';
 import { CreatePetUseCase } from '../../../core/application/use-cases/create-pet.use-case';
 import { LogoutUseCase } from '../../../core/application/use-cases/logout.use-case';
+import { LoadProfileUseCase } from '../../../core/application/use-cases/load-profile.use-case';
 import { Pet } from '../../../core/domain/models/pet';
+import { User } from '../../../core/domain/models/user';
 
 @Component({
   selector: 'app-pets-page',
@@ -18,45 +20,99 @@ import { Pet } from '../../../core/domain/models/pet';
     <section class="pets">
       <header>
         <div>
-          <p class="eyebrow">Cadastro</p>
-          <h1>Pets e tutores</h1>
-          <p class="description">Mantenha os dados dos pets atualizados para personalizar o atendimento.</p>
+          <p class="eyebrow">Cadastro centralizado</p>
+          <h1>Pets conectados ao backend</h1>
+          <p class="description">
+            Consulte e cadastre animais com os mesmos campos do DTO <code>PetRequest</code> do Spring Boot.
+          </p>
         </div>
       </header>
 
-      <div class="layout">
-        <form [formGroup]="form" (ngSubmit)="create()" novalidate>
+      <div class="layout" *ngIf="user() as current">
+        <form
+          [formGroup]="form"
+          (ngSubmit)="create()"
+          novalidate
+          [class.disabled]="current.role !== 'CLIENTE'"
+        >
           <h2>Novo pet</h2>
+          <p class="helper" *ngIf="current.role !== 'CLIENTE'">
+            Apenas clientes podem cadastrar pets. Acesse com uma conta de cliente para habilitar o formulário.
+          </p>
+          <div class="grid">
+            <label>
+              Nome
+              <input type="text" formControlName="nome" placeholder="Thor" [disabled]="current.role !== 'CLIENTE'" />
+            </label>
+            <label>
+              Espécie
+              <input type="text" formControlName="especie" placeholder="Cachorro" [disabled]="current.role !== 'CLIENTE'" />
+            </label>
+            <label>
+              Porte
+              <select formControlName="porte" [disabled]="current.role !== 'CLIENTE'">
+                <option value="PEQUENO">Pequeno</option>
+                <option value="MEDIO">Médio</option>
+                <option value="GRANDE">Grande</option>
+              </select>
+            </label>
+            <label>
+              Idade (anos)
+              <input type="number" min="0" formControlName="idade" placeholder="3" [disabled]="current.role !== 'CLIENTE'" />
+            </label>
+          </div>
           <label>
-            Nome do pet
-            <input type="text" formControlName="name" placeholder="Thor" />
+            Observações de saúde
+            <textarea
+              rows="3"
+              formControlName="observacoesSaude"
+              placeholder="Alergia a produtos com perfume"
+              [disabled]="current.role !== 'CLIENTE'"
+            ></textarea>
           </label>
           <label>
-            Espécie
-            <input type="text" formControlName="type" placeholder="Cachorro" />
+            Preferências
+            <textarea
+              rows="2"
+              formControlName="preferencias"
+              placeholder="Banho com água morna e secador silencioso"
+              [disabled]="current.role !== 'CLIENTE'"
+            ></textarea>
           </label>
-          <label>
-            Raça
-            <input type="text" formControlName="breed" placeholder="Lhasa Apso" />
-          </label>
-          <label>
-            Nome do tutor
-            <input type="text" formControlName="ownerName" placeholder="Carla Silva" />
-          </label>
-          <button type="submit" [disabled]="form.invalid || creating()">{{ creating() ? 'Salvando...' : 'Cadastrar pet' }}</button>
+          <button type="submit" [disabled]="form.invalid || creating() || current.role !== 'CLIENTE'">
+            {{ creating() ? 'Salvando...' : 'Cadastrar pet' }}
+          </button>
         </form>
 
         <section class="list">
-          <h2>Pets cadastrados</h2>
+          <div class="list-header">
+            <h2>Pets cadastrados</h2>
+            <p class="hint">Sincronizados via <code>/pets</code> conforme o usuário autenticado.</p>
+          </div>
           <div class="cards" *ngIf="pets()?.length; else empty">
             <article class="card" *ngFor="let pet of pets()">
-              <h3>{{ pet.name }}</h3>
-              <p>{{ pet.type }} · {{ pet.breed || 'Sem raça definida' }}</p>
-              <span>Tutor: {{ pet.ownerName }}</span>
+              <header>
+                <h3>{{ pet.nome }}</h3>
+                <span>{{ pet.especie }} · {{ pet.porte }}</span>
+              </header>
+              <dl>
+                <div>
+                  <dt>Idade</dt>
+                  <dd>{{ pet.idade ?? '—' }}</dd>
+                </div>
+                <div>
+                  <dt>Saúde</dt>
+                  <dd>{{ pet.observacoesSaude || 'Sem observações' }}</dd>
+                </div>
+                <div>
+                  <dt>Preferências</dt>
+                  <dd>{{ pet.preferencias || 'Sem preferências' }}</dd>
+                </div>
+              </dl>
             </article>
           </div>
           <ng-template #empty>
-            <p class="empty">Cadastre um pet para começar.</p>
+            <p class="empty">Nenhum pet cadastrado até o momento.</p>
           </ng-template>
         </section>
       </div>
@@ -94,15 +150,40 @@ import { Pet } from '../../../core/domain/models/pet';
       .layout {
         display: grid;
         gap: 2rem;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        align-items: start;
       }
 
       form {
-        background: rgba(15, 23, 42, 0.75);
+        background: rgba(15, 23, 42, 0.85);
         border-radius: 2rem;
         padding: 2rem;
         border: 1px solid rgba(148, 163, 184, 0.25);
         display: grid;
+        gap: 1.25rem;
+      }
+
+      form.disabled {
+        opacity: 0.6;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.6rem;
+      }
+
+      .helper {
+        margin: 0;
+        color: #fbbf24;
+        font-size: 0.85rem;
+        background: rgba(251, 191, 36, 0.12);
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 1rem;
       }
 
@@ -112,23 +193,35 @@ import { Pet } from '../../../core/domain/models/pet';
         font-size: 0.9rem;
       }
 
-      input {
-        padding: 0.8rem 1rem;
+      input,
+      select,
+      textarea {
+        padding: 0.85rem 1rem;
         border-radius: 1rem;
         border: 1px solid rgba(148, 163, 184, 0.25);
-        background: rgba(15, 23, 42, 0.65);
+        background: rgba(15, 23, 42, 0.55);
         color: inherit;
+        font-family: inherit;
+      }
+
+      textarea {
+        resize: vertical;
       }
 
       button {
         margin-top: 0.5rem;
-        padding: 0.85rem 1.5rem;
-        border-radius: 9999px;
+        padding: 0.95rem 1.5rem;
+        border-radius: 1rem;
         border: none;
         background: linear-gradient(135deg, #38bdf8, #818cf8);
         color: #0f172a;
         font-weight: 600;
         cursor: pointer;
+        transition: transform 0.15s ease;
+      }
+
+      button:hover:not([disabled]) {
+        transform: translateY(-1px);
       }
 
       button[disabled] {
@@ -141,34 +234,60 @@ import { Pet } from '../../../core/domain/models/pet';
         border-radius: 2rem;
         padding: 2rem;
         border: 1px solid rgba(148, 163, 184, 0.25);
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .list-header h2 {
+        margin: 0;
+      }
+
+      .hint {
+        margin: 0;
+        color: #94a3b8;
+        font-size: 0.85rem;
       }
 
       .cards {
         display: grid;
-        gap: 1rem;
-        margin-top: 1.5rem;
+        gap: 1.25rem;
       }
 
       .card {
         background: rgba(15, 23, 42, 0.7);
-        border-radius: 1.5rem;
-        padding: 1.5rem;
+        border-radius: 1.75rem;
+        padding: 1.75rem;
         border: 1px solid rgba(148, 163, 184, 0.2);
+        display: grid;
+        gap: 1.25rem;
       }
 
-      .card h3 {
-        margin: 0 0 0.5rem 0;
+      .card header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
 
-      .card p {
-        margin: 0;
+      .card header span {
         color: #94a3b8;
       }
 
-      .card span {
-        display: block;
-        margin-top: 0.75rem;
-        color: #38bdf8;
+      dl {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin: 0;
+      }
+
+      dt {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #94a3b8;
+      }
+
+      dd {
+        margin: 0.35rem 0 0;
         font-weight: 600;
       }
 
@@ -183,20 +302,27 @@ export class PetsPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly listPetsUseCase = inject(ListPetsUseCase);
   private readonly createPetUseCase = inject(CreatePetUseCase);
+  private readonly loadProfileUseCase = inject(LoadProfileUseCase);
   private readonly logoutUseCase = inject(LogoutUseCase);
   private readonly router = inject(Router);
 
   readonly form = this.fb.nonNullable.group({
-    name: ['', Validators.required],
-    type: ['', Validators.required],
-    breed: [''],
-    ownerName: ['', Validators.required]
+    nome: ['', Validators.required],
+    especie: ['', Validators.required],
+    porte: ['PEQUENO', Validators.required],
+    idade: [null as number | null],
+    observacoesSaude: [''],
+    preferencias: ['']
   });
 
   readonly pets = signal<Pet[] | null>(null);
   readonly creating = signal(false);
+  readonly user = signal<User | null>(null);
 
   ngOnInit(): void {
+    this.loadProfileUseCase.execute().subscribe({
+      next: (user: User) => this.user.set(user)
+    });
     this.load();
   }
 
@@ -208,21 +334,31 @@ export class PetsPageComponent implements OnInit {
   }
 
   create(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.user()?.role !== 'CLIENTE') {
       return;
     }
 
     this.creating.set(true);
-    this.createPetUseCase.execute(this.form.getRawValue()).subscribe({
-      next: (pet: Pet) => {
-        this.creating.set(false);
-        this.form.reset();
-        this.pets.set([...(this.pets() ?? []), pet]);
-      },
-      error: () => {
-        this.creating.set(false);
-      }
-    });
+    const { nome, especie, porte, idade, observacoesSaude, preferencias } = this.form.getRawValue();
+    this.createPetUseCase
+      .execute({ nome, especie, porte, idade: idade ?? null, observacoesSaude, preferencias })
+      .subscribe({
+        next: (pet: Pet) => {
+          this.creating.set(false);
+          this.form.reset({
+            nome: '',
+            especie: '',
+            porte: 'PEQUENO',
+            idade: null,
+            observacoesSaude: '',
+            preferencias: ''
+          });
+          this.pets.set([...(this.pets() ?? []), pet]);
+        },
+        error: () => {
+          this.creating.set(false);
+        }
+      });
   }
 
   logout(): void {

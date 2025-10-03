@@ -7,7 +7,7 @@ import { AUTH_REPOSITORY } from '../../domain/repositories/auth.repository';
 export class RegisterUseCase {
   private readonly repository = inject(AUTH_REPOSITORY);
 
-  execute(name: string, email: string, password: string): Observable<User> {
-    return this.repository.register(name, email, password);
+  execute(nome: string, telefone: string, email: string, senha: string): Observable<User> {
+    return this.repository.register(nome, telefone, email, senha);
   }
 }

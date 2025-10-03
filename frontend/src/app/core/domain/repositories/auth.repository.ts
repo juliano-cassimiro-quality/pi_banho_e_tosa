@@ -3,8 +3,8 @@ import { Observable } from 'rxjs';
 import { User } from '../models/user';
 
 export interface AuthRepository {
-  login(email: string, password: string): Observable<User>;
-  register(name: string, email: string, password: string): Observable<User>;
+  login(email: string, senha: string): Observable<User>;
+  register(nome: string, telefone: string, email: string, senha: string): Observable<User>;
   getProfile(): Observable<User>;
   logout(): void;
 }
