@@ -413,7 +413,7 @@ export class SchedulePageComponent implements OnInit, OnDestroy {
 
   selectSlot(slot: AvailableSlot): void {
     const [date, time] = slot.inicio.split('T');
-    this.form.patchValue({ data, horario: time.slice(0, 5) });
+    this.form.patchValue({ data: date, horario: time.slice(0, 5) });
   }
 
   serviceLabel(tipo: Appointment['tipoServico']): string {

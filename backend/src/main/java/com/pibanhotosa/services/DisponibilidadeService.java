@@ -77,7 +77,7 @@ public class DisponibilidadeService {
                     slots.add(new SlotDisponivelResponse(cursor, potencialFim));
                 }
             }
-            cursor = cursor.plusMinutes(intervaloMinutos);
+            cursor.plusMinutes(intervaloMinutos);
         }
 
         return slots;
