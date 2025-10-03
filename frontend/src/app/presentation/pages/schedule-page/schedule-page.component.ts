@@ -1,13 +1,20 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { AppHeaderComponent } from '../../components/app-header/app-header.component';
 import { ScheduleAppointmentUseCase } from '../../../core/application/use-cases/schedule-appointment.use-case';
 import { ListAppointmentsUseCase } from '../../../core/application/use-cases/list-appointments.use-case';
+import { ListPetsUseCase } from '../../../core/application/use-cases/list-pets.use-case';
+import { ListAvailabilityUseCase } from '../../../core/application/use-cases/list-availability.use-case';
 import { LogoutUseCase } from '../../../core/application/use-cases/logout.use-case';
-import { Appointment } from '../../../core/domain/models/appointment';
+import { LoadProfileUseCase } from '../../../core/application/use-cases/load-profile.use-case';
+import { Appointment, serviceLabel, statusLabel as statusLabelFn } from '../../../core/domain/models/appointment';
+import { Pet } from '../../../core/domain/models/pet';
+import { User } from '../../../core/domain/models/user';
+import { AvailableSlot } from '../../../core/domain/repositories/appointment.repository';
 
 @Component({
   selector: 'app-schedule-page',
@@ -19,30 +26,66 @@ import { Appointment } from '../../../core/domain/models/appointment';
       <header>
         <div>
           <p class="eyebrow">Agenda inteligente</p>
-          <h1>Novo agendamento</h1>
-          <p class="description">Organize horários com rapidez e garanta uma experiência premium para os tutores.</p>
+          <h1>Agendamentos integrados</h1>
+          <p class="description">
+            Selecione um pet, o serviço desejado e consulte horários sugeridos pelo endpoint <code>/appointments/availability</code>.
+          </p>
         </div>
       </header>
 
-      <div class="layout">
-        <form [formGroup]="form" (ngSubmit)="schedule()" novalidate>
+      <div class="layout" *ngIf="user() as current">
+        <form [formGroup]="form" (ngSubmit)="schedule()" novalidate [class.disabled]="current.role !== 'CLIENTE'">
+          <h2>Novo agendamento</h2>
+          <p class="helper" *ngIf="current.role !== 'CLIENTE'">
+            Apenas contas de cliente podem criar agendamentos. Utilize uma conta de cliente para habilitar o formulário.
+          </p>
           <label>
             Pet
-            <input type="text" formControlName="petName" placeholder="Thor" />
-          </label>
-          <label>
-            Tutor
-            <input type="text" formControlName="ownerName" placeholder="Carla Silva" />
+            <select formControlName="animalId" [disabled]="current.role !== 'CLIENTE'">
+              <option [ngValue]="null" disabled>Selecione um pet</option>
+              <option *ngFor="let pet of pets()" [ngValue]="pet.id">{{ pet.nome }} ({{ pet.especie }})</option>
+            </select>
           </label>
           <label>
             Serviço
-            <input type="text" formControlName="service" placeholder="Banho &amp; hidratação" />
+            <select formControlName="tipoServico" [disabled]="current.role !== 'CLIENTE'">
+              <option value="BANHO">{{ serviceLabel('BANHO') }}</option>
+              <option value="TOSA">{{ serviceLabel('TOSA') }}</option>
+              <option value="BANHO_E_TOSA">{{ serviceLabel('BANHO_E_TOSA') }}</option>
+            </select>
           </label>
+          <div class="grid">
+            <label>
+              Data
+              <input type="date" formControlName="data" [disabled]="current.role !== 'CLIENTE'" />
+            </label>
+            <label>
+              Horário
+              <input type="time" formControlName="horario" [disabled]="current.role !== 'CLIENTE'" />
+            </label>
+          </div>
           <label>
-            Data e hora
-            <input type="datetime-local" formControlName="scheduledAt" />
+            Observações para o profissional
+            <textarea
+              rows="3"
+              formControlName="observacoesCliente"
+              placeholder="Cliente prefere tosa higiênica e banho morno"
+              [disabled]="current.role !== 'CLIENTE'"
+            ></textarea>
           </label>
-          <button type="submit" [disabled]="form.invalid || creating()">{{ creating() ? 'Agendando...' : 'Agendar' }}</button>
+          <button type="submit" [disabled]="form.invalid || creating() || current.role !== 'CLIENTE'">
+            {{ creating() ? 'Agendando...' : 'Agendar' }}
+          </button>
+
+          <section class="availability" *ngIf="availableSlots()?.length">
+            <h3>Horários sugeridos</h3>
+            <p>Gerados pelo backend considerando capacidade e duração do serviço.</p>
+            <div class="slots">
+              <button type="button" *ngFor="let slot of availableSlots()" (click)="selectSlot(slot)">
+                {{ slot.inicio | date: 'dd/MM HH:mm' }}
+              </button>
+            </div>
+          </section>
         </form>
 
         <section class="list">
@@ -50,10 +93,14 @@ import { Appointment } from '../../../core/domain/models/appointment';
           <div class="items" *ngIf="appointments()?.length; else empty">
             <article class="item" *ngFor="let appointment of appointments()">
               <div>
-                <h3>{{ appointment.petName }} · {{ appointment.service }}</h3>
-                <p>Tutor: {{ appointment.ownerName }}</p>
+                <h3>{{ appointment.animal.nome }} · {{ serviceLabel(appointment.tipoServico) }}</h3>
+                <p>Cliente: {{ appointment.cliente.nome }}</p>
+                <p class="muted">{{ appointment.observacoesCliente || 'Sem observações' }}</p>
               </div>
-              <span>{{ appointment.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+              <div class="meta">
+                <span class="status">{{ statusLabel(appointment.status) }}</span>
+                <span>{{ appointment.dataHora | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
             </article>
           </div>
           <ng-template #empty>
@@ -95,16 +142,35 @@ import { Appointment } from '../../../core/domain/models/appointment';
       .layout {
         display: grid;
         gap: 2rem;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        align-items: start;
       }
 
       form {
-        background: rgba(15, 23, 42, 0.75);
+        background: rgba(15, 23, 42, 0.85);
         border-radius: 2rem;
         padding: 2rem;
         border: 1px solid rgba(148, 163, 184, 0.25);
         display: grid;
-        gap: 1rem;
+        gap: 1.25rem;
+      }
+
+      form.disabled {
+        opacity: 0.6;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.6rem;
+      }
+
+      .helper {
+        margin: 0;
+        color: #fbbf24;
+        font-size: 0.85rem;
+        background: rgba(251, 191, 36, 0.12);
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
       }
 
       label {
@@ -113,28 +179,73 @@ import { Appointment } from '../../../core/domain/models/appointment';
         font-size: 0.9rem;
       }
 
-      input {
-        padding: 0.8rem 1rem;
+      input,
+      select,
+      textarea {
+        padding: 0.85rem 1rem;
         border-radius: 1rem;
         border: 1px solid rgba(148, 163, 184, 0.25);
-        background: rgba(15, 23, 42, 0.65);
+        background: rgba(15, 23, 42, 0.55);
         color: inherit;
+        font-family: inherit;
       }
 
-      button {
+      textarea {
+        resize: vertical;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+      }
+
+      button[type='submit'] {
         margin-top: 0.5rem;
-        padding: 0.85rem 1.5rem;
-        border-radius: 9999px;
+        padding: 0.95rem 1.5rem;
+        border-radius: 1rem;
         border: none;
-        background: linear-gradient(135deg, #38bdf8, #818cf8);
+        background: linear-gradient(135deg, #38bdf8, #6366f1);
         color: #0f172a;
         font-weight: 600;
         cursor: pointer;
+        transition: transform 0.15s ease;
       }
 
-      button[disabled] {
+      button[type='submit']:hover:not([disabled]) {
+        transform: translateY(-1px);
+      }
+
+      button[type='submit'][disabled] {
         opacity: 0.6;
         cursor: not-allowed;
+      }
+
+      .availability {
+        display: grid;
+        gap: 0.75rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.25);
+        padding-top: 1.25rem;
+      }
+
+      .slots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .slots button {
+        padding: 0.6rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: transparent;
+        color: #e2e8f0;
+        cursor: pointer;
+      }
+
+      .slots button:hover {
+        border-color: rgba(56, 189, 248, 0.6);
+        color: #38bdf8;
       }
 
       .list {
@@ -158,6 +269,7 @@ import { Appointment } from '../../../core/domain/models/appointment';
         border-radius: 1.5rem;
         padding: 1.25rem 1.5rem;
         border: 1px solid rgba(148, 163, 184, 0.2);
+        gap: 1rem;
       }
 
       .item h3 {
@@ -165,13 +277,25 @@ import { Appointment } from '../../../core/domain/models/appointment';
       }
 
       .item p {
-        margin: 0.35rem 0 0 0;
+        margin: 0.35rem 0 0;
         color: #94a3b8;
       }
 
-      .item span {
+      .item .muted {
+        font-size: 0.85rem;
+      }
+
+      .meta {
+        display: grid;
+        text-align: right;
+        gap: 0.35rem;
+      }
+
+      .status {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
         color: #38bdf8;
-        font-weight: 600;
       }
 
       .empty {
@@ -181,26 +305,69 @@ import { Appointment } from '../../../core/domain/models/appointment';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SchedulePageComponent implements OnInit {
+export class SchedulePageComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly scheduleAppointmentUseCase = inject(ScheduleAppointmentUseCase);
   private readonly listAppointmentsUseCase = inject(ListAppointmentsUseCase);
+  private readonly listPetsUseCase = inject(ListPetsUseCase);
+  private readonly listAvailabilityUseCase = inject(ListAvailabilityUseCase);
+  private readonly loadProfileUseCase = inject(LoadProfileUseCase);
   private readonly logoutUseCase = inject(LogoutUseCase);
   private readonly router = inject(Router);
 
+  private availabilitySubscription: Subscription | null = null;
+
   readonly form = this.fb.nonNullable.group({
-    petId: [''],
-    petName: ['', Validators.required],
-    ownerName: ['', Validators.required],
-    service: ['', Validators.required],
-    scheduledAt: ['', Validators.required]
+    animalId: [null as number | null, Validators.required],
+    tipoServico: ['BANHO', Validators.required],
+    data: ['', Validators.required],
+    horario: ['', Validators.required],
+    observacoesCliente: ['']
   });
 
   readonly appointments = signal<Appointment[] | null>(null);
+  readonly pets = signal<Pet[]>([]);
+  readonly availableSlots = signal<AvailableSlot[] | null>(null);
   readonly creating = signal(false);
+  readonly user = signal<User | null>(null);
+
+  constructor() {
+    effect(() => {
+      const date = this.form.controls.data.value;
+      const tipoServico = this.form.controls.tipoServico.value as 'BANHO' | 'TOSA' | 'BANHO_E_TOSA';
+
+      if (this.availabilitySubscription) {
+        this.availabilitySubscription.unsubscribe();
+        this.availabilitySubscription = null;
+      }
+
+      if (!date || !tipoServico) {
+        this.availableSlots.set(null);
+        return;
+      }
+
+      this.availabilitySubscription = this.listAvailabilityUseCase.execute(date, tipoServico).subscribe({
+        next: (slots: AvailableSlot[]) => this.availableSlots.set(slots),
+        error: () => this.availableSlots.set([])
+      });
+    });
+  }
 
   ngOnInit(): void {
+    this.loadProfileUseCase.execute().subscribe({
+      next: (user: User) => this.user.set(user)
+    });
+    this.listPetsUseCase.execute().subscribe({
+      next: (pets: Pet[]) => this.pets.set(pets),
+      error: () => this.pets.set([])
+    });
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    if (this.availabilitySubscription) {
+      this.availabilitySubscription.unsubscribe();
+    }
   }
 
   load(): void {
@@ -211,24 +378,50 @@ export class SchedulePageComponent implements OnInit {
   }
 
   schedule(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.user()?.role !== 'CLIENTE') {
       return;
     }
 
+    const { animalId, tipoServico, data, horario, observacoesCliente } = this.form.getRawValue();
+    const dataHora = `${data}T${horario}`;
+
     this.creating.set(true);
-    const { petId, petName, ownerName, service, scheduledAt } = this.form.getRawValue();
     this.scheduleAppointmentUseCase
-      .execute({ petId, petName, ownerName, service, scheduledAt })
+      .execute({
+        animalId: Number(animalId),
+        tipoServico: tipoServico as 'BANHO' | 'TOSA' | 'BANHO_E_TOSA',
+        dataHora,
+        observacoesCliente
+      })
       .subscribe({
         next: (appointment: Appointment) => {
           this.creating.set(false);
-          this.form.reset();
           this.appointments.set([appointment, ...(this.appointments() ?? [])]);
+          this.form.reset({
+            animalId: null,
+            tipoServico: 'BANHO',
+            data: '',
+            horario: '',
+            observacoesCliente: ''
+          });
         },
         error: () => {
           this.creating.set(false);
         }
       });
+  }
+
+  selectSlot(slot: AvailableSlot): void {
+    const [date, time] = slot.inicio.split('T');
+    this.form.patchValue({ data, horario: time.slice(0, 5) });
+  }
+
+  serviceLabel(tipo: Appointment['tipoServico']): string {
+    return serviceLabel(tipo);
+  }
+
+  statusLabel(status: Appointment['status']): string {
+    return statusLabelFn(status);
   }
 
   logout(): void {

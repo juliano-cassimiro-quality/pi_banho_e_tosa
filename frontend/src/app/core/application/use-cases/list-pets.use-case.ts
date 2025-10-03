@@ -7,7 +7,7 @@ import { PET_REPOSITORY } from '../../domain/repositories/pet.repository';
 export class ListPetsUseCase {
   private readonly repository = inject(PET_REPOSITORY);
 
-  execute(): Observable<Pet[]> {
-    return this.repository.list();
+  execute(tutorId?: number): Observable<Pet[]> {
+    return this.repository.list(tutorId);
   }
 }
