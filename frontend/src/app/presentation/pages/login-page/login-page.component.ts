@@ -13,20 +13,20 @@ import { LoginUseCase } from '../../../core/application/use-cases/login.use-case
     <section class="auth">
       <div class="hero">
         <p class="pill">PI Banho &amp; Tosa</p>
-        <h1>Bem-vindo de volta 👋</h1>
+        <h1>Seja bem-vindo de volta 🌿</h1>
         <p class="description">
-          Acompanhe agendamentos, disponibilidade da equipe e histórico de atendimento em um único painel conectado ao seu
-          backend Java.
+          Acesse o painel verde e acompanhe disponibilidade da equipe, histórico de atendimento e métricas em tempo real,
+          totalmente sincronizados com o backend.
         </p>
         <ul>
-          <li>Integração nativa com autenticação JWT</li>
-          <li>Agenda inteligente com reagendamento rápido</li>
-          <li>Relatórios de desempenho em tempo real</li>
+          <li>Autenticação JWT integrada</li>
+          <li>Dashboard sustentável com indicadores chave</li>
+          <li>Agenda inteligente com reagendamentos ágeis</li>
         </ul>
       </div>
       <div class="card">
-        <h2>Acesse sua conta</h2>
-        <p class="subtitle">Use o e-mail cadastrado para visualizar a operação completa.</p>
+        <h2>Entre na sua conta</h2>
+        <p class="subtitle">Informe as credenciais cadastradas para continuar.</p>
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <label>
             E-mail
@@ -51,12 +51,12 @@ import { LoginUseCase } from '../../../core/application/use-cases/login.use-case
   styles: [
     `
       .auth {
-        min-height: 100vh;
+        min-height: calc(100vh - 120px);
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: clamp(2rem, 5vw, 4rem);
         align-items: center;
-        padding: clamp(2rem, 6vw, 6rem);
+        padding: clamp(2.5rem, 6vw, 5.5rem);
       }
 
       .hero {
@@ -67,52 +67,56 @@ import { LoginUseCase } from '../../../core/application/use-cases/login.use-case
       .pill {
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
-        padding: 0.35rem 1rem;
+        gap: 0.45rem;
+        padding: 0.4rem 1.2rem;
         border-radius: 999px;
-        background: rgba(56, 189, 248, 0.15);
-        color: #38bdf8;
-        font-size: 0.8rem;
+        background: var(--color-accent-soft);
+        color: var(--color-accent-strong);
         letter-spacing: 0.08em;
         text-transform: uppercase;
+        font-size: 0.78rem;
+        font-weight: 600;
       }
 
       h1 {
         margin: 0;
-        font-size: clamp(2.25rem, 4vw, 3.25rem);
+        font-size: clamp(2.2rem, 4.5vw, 3.15rem);
+        color: var(--color-heading);
       }
 
       .description {
-        color: #cbd5f5;
-        line-height: 1.6;
+        margin: 0;
+        color: var(--color-text-muted);
+        line-height: 1.65;
       }
 
       ul {
         margin: 0;
         padding-left: 1.25rem;
-        color: #94a3b8;
+        color: var(--color-text-muted);
         display: grid;
         gap: 0.5rem;
       }
 
       .card {
-        background: rgba(15, 23, 42, 0.9);
-        border-radius: 2rem;
-        padding: clamp(2rem, 5vw, 3rem);
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.45);
+        background: var(--color-surface);
+        border-radius: 1.75rem;
+        padding: clamp(2rem, 5vw, 3.25rem);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-lg);
         display: grid;
         gap: 1.5rem;
       }
 
       .card h2 {
         margin: 0;
-        font-size: 1.75rem;
+        font-size: 1.85rem;
+        color: var(--color-heading);
       }
 
       .subtitle {
         margin: 0;
-        color: #94a3b8;
+        color: var(--color-text-muted);
       }
 
       form {
@@ -123,22 +127,23 @@ import { LoginUseCase } from '../../../core/application/use-cases/login.use-case
       label {
         display: grid;
         gap: 0.5rem;
-        font-size: 0.9rem;
-        color: #e2e8f0;
+        font-size: 0.92rem;
+        color: var(--color-text-muted);
       }
 
       input {
         padding: 0.85rem 1rem;
         border-radius: 1rem;
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        background: rgba(15, 23, 42, 0.65);
-        color: inherit;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface-elevated);
+        color: var(--color-text);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
       }
 
       input:focus {
         outline: none;
-        border-color: rgba(56, 189, 248, 0.75);
-        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
       }
 
       button {
@@ -146,15 +151,17 @@ import { LoginUseCase } from '../../../core/application/use-cases/login.use-case
         padding: 0.95rem 1.5rem;
         border-radius: 1rem;
         border: none;
-        background: linear-gradient(135deg, #38bdf8, #6366f1);
-        color: #0f172a;
+        background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-strong) 100%);
+        color: #ffffff;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.15s ease;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+        box-shadow: var(--shadow-sm);
       }
 
       button:hover:not([disabled]) {
         transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
       }
 
       button[disabled] {
@@ -164,16 +171,16 @@ import { LoginUseCase } from '../../../core/application/use-cases/login.use-case
 
       .hint {
         margin: 0;
-        color: #fca5a5;
+        color: var(--color-danger);
       }
 
       .register {
         margin: 0;
-        color: #94a3b8;
+        color: var(--color-text-muted);
       }
 
       .register a {
-        color: #38bdf8;
+        color: var(--color-accent-strong);
         font-weight: 600;
       }
 

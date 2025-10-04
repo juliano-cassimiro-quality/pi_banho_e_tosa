@@ -129,13 +129,14 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
         text-transform: uppercase;
         letter-spacing: 0.1em;
         font-size: 0.75rem;
-        color: #38bdf8;
+        color: var(--color-accent-strong);
         margin-bottom: 0.75rem;
       }
 
       .description {
-        color: #94a3b8;
+        color: var(--color-text-muted);
         margin-top: 0.5rem;
+        max-width: 60ch;
       }
 
       .layout {
@@ -146,12 +147,13 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
       }
 
       form {
-        background: rgba(15, 23, 42, 0.85);
+        background: var(--color-surface);
         border-radius: 2rem;
         padding: 2rem;
-        border: 1px solid rgba(148, 163, 184, 0.25);
+        border: 1px solid var(--color-border);
         display: grid;
         gap: 1.25rem;
+        box-shadow: var(--shadow-lg);
       }
 
       form.disabled {
@@ -161,13 +163,14 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
       h2 {
         margin: 0;
         font-size: 1.6rem;
+        color: var(--color-heading);
       }
 
       .helper {
         margin: 0;
-        color: #fbbf24;
+        color: #ca8a04;
         font-size: 0.85rem;
-        background: rgba(251, 191, 36, 0.12);
+        background: rgba(202, 138, 4, 0.12);
         padding: 0.75rem 1rem;
         border-radius: 1rem;
       }
@@ -176,6 +179,7 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
         display: grid;
         gap: 0.5rem;
         font-size: 0.9rem;
+        color: var(--color-text-muted);
       }
 
       input,
@@ -183,10 +187,19 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
       textarea {
         padding: 0.85rem 1rem;
         border-radius: 1rem;
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        background: rgba(15, 23, 42, 0.55);
-        color: inherit;
+        border: 1px solid var(--color-border);
+        background: var(--color-surface-elevated);
+        color: var(--color-text);
         font-family: inherit;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
       }
 
       textarea {
@@ -204,15 +217,17 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
         padding: 0.95rem 1.5rem;
         border-radius: 1rem;
         border: none;
-        background: linear-gradient(135deg, #38bdf8, #6366f1);
-        color: #0f172a;
+        background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-strong) 100%);
+        color: #ffffff;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.15s ease;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+        box-shadow: var(--shadow-sm);
       }
 
       button[type='submit']:hover:not([disabled]) {
         transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
       }
 
       button[type='submit'][disabled] {
@@ -223,7 +238,7 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
       .availability {
         display: grid;
         gap: 0.75rem;
-        border-top: 1px solid rgba(148, 163, 184, 0.25);
+        border-top: 1px solid var(--color-border);
         padding-top: 1.25rem;
       }
 
@@ -236,22 +251,26 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
       .slots button {
         padding: 0.6rem 1rem;
         border-radius: 999px;
-        border: 1px solid rgba(148, 163, 184, 0.35);
+        border: 1px solid var(--color-border);
         background: transparent;
-        color: #e2e8f0;
+        color: var(--color-text);
         cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
       }
 
       .slots button:hover {
-        border-color: rgba(56, 189, 248, 0.6);
-        color: #38bdf8;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+        border-color: var(--color-accent);
+        color: var(--color-accent-strong);
       }
 
       .list {
-        background: rgba(15, 23, 42, 0.45);
+        background: var(--color-surface);
         border-radius: 2rem;
         padding: 2rem;
-        border: 1px solid rgba(148, 163, 184, 0.25);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-lg);
       }
 
       .items {
@@ -264,20 +283,21 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: rgba(15, 23, 42, 0.7);
+        background: var(--color-surface-elevated);
         border-radius: 1.5rem;
         padding: 1.25rem 1.5rem;
-        border: 1px solid rgba(148, 163, 184, 0.2);
+        border: 1px solid var(--color-border);
         gap: 1rem;
       }
 
       .item h3 {
         margin: 0;
+        color: var(--color-heading);
       }
 
       .item p {
         margin: 0.35rem 0 0;
-        color: #94a3b8;
+        color: var(--color-text-muted);
       }
 
       .item .muted {
@@ -288,17 +308,18 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
         display: grid;
         text-align: right;
         gap: 0.35rem;
+        color: var(--color-text-muted);
       }
 
       .status {
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #38bdf8;
+        color: var(--color-accent-strong);
       }
 
       .empty {
-        color: #94a3b8;
+        color: var(--color-text-muted);
       }
     `
   ],
@@ -399,28 +420,21 @@ export class SchedulePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const { animalId, tipoServico, data, horario, observacoesCliente } = this.form.getRawValue();
-    const dataHora = `${data}T${horario}`;
-
     this.creating.set(true);
+    const { animalId, tipoServico, data, horario, observacoesCliente } = this.form.getRawValue();
     this.scheduleAppointmentUseCase
       .execute({
-        animalId: Number(animalId),
+        animalId: animalId!,
         tipoServico: tipoServico as 'BANHO' | 'TOSA' | 'BANHO_E_TOSA',
-        dataHora,
+        data,
+        horario,
         observacoesCliente
       })
       .subscribe({
-        next: (appointment: Appointment) => {
+        next: () => {
           this.creating.set(false);
-          this.appointments.set([appointment, ...(this.appointments() ?? [])]);
-          this.form.reset({
-            animalId: null,
-            tipoServico: 'BANHO',
-            data: '',
-            horario: '',
-            observacoesCliente: ''
-          });
+          this.form.patchValue({ observacoesCliente: '' });
+          this.load();
         },
         error: () => {
           this.creating.set(false);
@@ -429,16 +443,18 @@ export class SchedulePageComponent implements OnInit, OnDestroy {
   }
 
   selectSlot(slot: AvailableSlot): void {
-    const [date, time] = slot.inicio.split('T');
-    this.form.patchValue({ data: date, horario: time.slice(0, 5) });
-  }
-
-  serviceLabel(tipo: Appointment['tipoServico']): string {
-    return serviceLabel(tipo);
+    this.form.patchValue({
+      data: slot.inicio.split('T')[0],
+      horario: slot.inicio.split('T')[1].slice(0, 5)
+    });
   }
 
   statusLabel(status: Appointment['status']): string {
     return statusLabelFn(status);
+  }
+
+  serviceLabel(service: Appointment['tipoServico']): string {
+    return serviceLabel(service);
   }
 
   logout(): void {

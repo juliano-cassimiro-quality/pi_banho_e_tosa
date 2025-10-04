@@ -7,25 +7,64 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <section class="landing">
-      <div class="content">
-        <p class="tag">Gestão 360° para banho &amp; tosa</p>
-        <h1>Agende, acompanhe e encante seus clientes.</h1>
-        <p class="description">
-          Plataforma completa com dashboards de desempenho, cadastros de pets e agendamentos inteligentes para o seu centro de
-          estética animal.
+      <div class="hero">
+        <span class="badge">Experiência verde conectada</span>
+        <h1>
+          Gestão sustentável para banho &amp; tosa
+          <span>do agendamento ao carinho final.</span>
+        </h1>
+        <p class="lead">
+          Simplifique rotinas, acompanhe indicadores em tempo real e ofereça um atendimento acolhedor com a plataforma que
+          conversa diretamente com o seu backend Spring Boot.
         </p>
-        <div class="actions">
-          <a routerLink="/login">Entrar</a>
-          <a routerLink="/cadastro" class="secondary">Começar agora</a>
+        <div class="cta">
+          <a routerLink="/cadastro" class="primary">Criar conta gratuita</a>
+          <a routerLink="/login" class="ghost">Já tenho acesso</a>
         </div>
+        <dl class="highlights">
+          <div>
+            <dt>Agenda inteligente</dt>
+            <dd>Horários otimizados, confirmações automáticas e reagendamentos em um clique.</dd>
+          </div>
+          <div>
+            <dt>Experiência premium</dt>
+            <dd>Fluxos pensados para equipes que valorizam cuidado, agilidade e relacionamento.</dd>
+          </div>
+          <div>
+            <dt>Insights em tempo real</dt>
+            <dd>Painéis verdes com métricas de performance alinhadas ao seu negócio.</dd>
+          </div>
+        </dl>
       </div>
-      <aside class="preview">
-        <div class="glass">
-          <p class="glass-title">Painel inteligente</p>
+      <aside class="preview" aria-label="Pré-visualização do painel">
+        <div class="dashboard-card">
+          <header>
+            <span class="pill">Hoje</span>
+            <strong>Agenda sustentável</strong>
+            <p>Três atendimentos confirmados e duas vagas livres para otimizar sua operação.</p>
+          </header>
           <ul>
-            <li>Resumo financeiro em tempo real</li>
-            <li>Controle de agenda otimizado</li>
-            <li>Alertas para clientes VIP</li>
+            <li>
+              <span class="icon">🐾</span>
+              <div>
+                <strong>Thor</strong>
+                <span>Banho &amp; hidratação às 09:30</span>
+              </div>
+            </li>
+            <li>
+              <span class="icon">✂️</span>
+              <div>
+                <strong>Luna</strong>
+                <span>Tosa completa às 11:00</span>
+              </div>
+            </li>
+            <li>
+              <span class="icon">🌿</span>
+              <div>
+                <strong>Dica eco</strong>
+                <span>Reduza o consumo trocando toalhas por ecofibra.</span>
+              </div>
+            </li>
           </ul>
         </div>
       </aside>
@@ -34,58 +73,118 @@ import { RouterLink } from '@angular/router';
   styles: [
     `
       .landing {
-        min-height: 100vh;
+        min-height: calc(100vh - 120px);
+        padding: clamp(2.5rem, 6vw, 6rem) clamp(1.5rem, 6vw, 6rem) clamp(3rem, 8vw, 7rem);
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: clamp(2rem, 4vw, 5rem);
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         align-items: center;
-        gap: 3rem;
-        padding: 4rem clamp(1.5rem, 5vw, 5rem);
       }
 
-      .content h1 {
-        font-size: clamp(2.5rem, 5vw, 3.75rem);
-        margin-bottom: 1rem;
-        line-height: 1.1;
+      .hero {
+        display: grid;
+        gap: 1.5rem;
+        max-width: 620px;
       }
 
-      .tag {
-        display: inline-block;
-        background: rgba(56, 189, 248, 0.12);
-        color: #38bdf8;
-        padding: 0.35rem 0.85rem;
-        border-radius: 9999px;
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1.1rem;
+        border-radius: 999px;
+        background: var(--color-accent-soft);
+        color: var(--color-accent-strong);
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.1em;
-        margin-bottom: 1.5rem;
+        font-weight: 600;
       }
 
-      .description {
-        color: #94a3b8;
-        font-size: 1.05rem;
-        max-width: 36ch;
+      h1 {
+        margin: 0;
+        font-size: clamp(2.6rem, 5vw, 3.75rem);
+        line-height: 1.08;
+        color: var(--color-heading);
       }
 
-      .actions {
-        margin-top: 2rem;
+      h1 span {
+        display: block;
+        font-size: clamp(1.7rem, 4vw, 2.25rem);
+        color: var(--color-text-muted);
+        font-weight: 500;
+      }
+
+      .lead {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--color-text-muted);
+        line-height: 1.7;
+      }
+
+      .cta {
         display: flex;
-        gap: 1rem;
         flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 0.5rem;
       }
 
-      .actions a {
-        padding: 0.8rem 1.75rem;
-        border-radius: 9999px;
+      .cta a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.95rem 1.85rem;
+        border-radius: 999px;
         font-weight: 600;
         letter-spacing: 0.02em;
-        background: #38bdf8;
-        color: #0f172a;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
       }
 
-      .actions .secondary {
-        background: transparent;
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        color: #e2e8f0;
+      .cta a:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .cta .primary {
+        background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-strong) 100%);
+        color: #ffffff;
+      }
+
+      .cta .ghost {
+        background: var(--color-surface);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+      }
+
+      .highlights {
+        display: grid;
+        gap: 1.25rem;
+        margin: 1.5rem 0 0;
+      }
+
+      .highlights div {
+        padding: 1.25rem 1.5rem;
+        border-radius: 1.5rem;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-sm);
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .highlights dt {
+        margin: 0;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-muted);
+      }
+
+      .highlights dd {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--color-text);
+        line-height: 1.6;
       }
 
       .preview {
@@ -93,19 +192,44 @@ import { RouterLink } from '@angular/router';
         justify-content: center;
       }
 
-      .glass {
-        width: min(360px, 90%);
-        padding: 2.5rem;
+      .dashboard-card {
+        width: min(420px, 100%);
+        padding: 2.25rem;
         border-radius: 2rem;
-        background: linear-gradient(145deg, rgba(56, 189, 248, 0.18), rgba(15, 23, 42, 0.8));
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        box-shadow: 0 20px 80px rgba(15, 23, 42, 0.35);
+        background: linear-gradient(160deg, color-mix(in srgb, var(--color-accent-soft) 65%, transparent) 0%,
+            var(--color-surface) 55%);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-lg);
+        display: grid;
+        gap: 1.5rem;
       }
 
-      .glass-title {
-        font-size: 1.1rem;
+      .dashboard-card header {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .pill {
+        justify-self: flex-start;
+        padding: 0.35rem 0.9rem;
+        border-radius: 999px;
+        background: var(--color-surface-elevated);
+        color: var(--color-text-muted);
+        font-size: 0.75rem;
         font-weight: 600;
-        margin-bottom: 1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .dashboard-card strong {
+        font-size: 1.45rem;
+        color: var(--color-heading);
+      }
+
+      .dashboard-card p {
+        margin: 0;
+        color: var(--color-text-muted);
+        line-height: 1.6;
       }
 
       ul {
@@ -113,14 +237,50 @@ import { RouterLink } from '@angular/router';
         padding: 0;
         margin: 0;
         display: grid;
-        gap: 0.75rem;
-        color: #e2e8f0;
+        gap: 1rem;
       }
 
-      ul li::before {
-        content: '✔';
-        margin-right: 0.5rem;
-        color: #38bdf8;
+      li {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: 1.5rem;
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+      }
+
+      li strong {
+        display: block;
+        color: var(--color-heading);
+      }
+
+      li span {
+        display: block;
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+      }
+
+      .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: var(--color-accent-soft);
+        color: var(--color-accent-strong);
+        font-size: 1.4rem;
+      }
+
+      @media (max-width: 960px) {
+        .landing {
+          grid-template-columns: 1fr;
+          text-align: left;
+        }
+
+        .preview {
+          justify-content: flex-start;
+        }
       }
     `
   ]

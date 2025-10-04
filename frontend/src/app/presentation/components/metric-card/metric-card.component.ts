@@ -20,35 +20,37 @@ import { CommonModule } from '@angular/common';
         display: flex;
         gap: 1rem;
         padding: 1.5rem;
-        background: rgba(30, 41, 59, 0.9);
+        background: var(--color-surface);
         border-radius: 1.25rem;
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-sm);
+        align-items: center;
       }
 
       .icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 16px;
-        background: rgba(56, 189, 248, 0.2);
-        color: #38bdf8;
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: var(--color-accent-soft);
+        color: var(--color-accent-strong);
         display: grid;
         place-items: center;
-        font-size: 1.5rem;
+        font-size: 1.6rem;
       }
 
       .label {
         margin: 0;
-        color: #94a3b8;
+        color: var(--color-text-muted);
         font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
       }
 
       .value {
-        font-size: 1.75rem;
+        font-size: 1.85rem;
         display: block;
-        margin-top: 0.25rem;
+        margin-top: 0.35rem;
+        color: var(--color-heading);
       }
     `
   ]
