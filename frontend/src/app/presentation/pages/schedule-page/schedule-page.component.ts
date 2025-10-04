@@ -34,21 +34,21 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
       </header>
 
       <div class="layout" *ngIf="user() as current">
-        <form [formGroup]="form" (ngSubmit)="schedule()" novalidate [class.disabled]="current.role !== 'CLIENTE'">
+        <form [formGroup]="form" (ngSubmit)="schedule()" novalidate [class.disabled]="form.disabled">
           <h2>Novo agendamento</h2>
-          <p class="helper" *ngIf="current.role !== 'CLIENTE'">
+          <p class="helper" *ngIf="form.disabled && current.role !== 'CLIENTE'">
             Apenas contas de cliente podem criar agendamentos. Utilize uma conta de cliente para habilitar o formulário.
           </p>
           <label>
             Pet
-            <select formControlName="animalId" [disabled]="current.role !== 'CLIENTE'">
+            <select formControlName="animalId">
               <option [ngValue]="null" disabled>Selecione um pet</option>
               <option *ngFor="let pet of pets()" [ngValue]="pet.id">{{ pet.nome }} ({{ pet.especie }})</option>
             </select>
           </label>
           <label>
             Serviço
-            <select formControlName="tipoServico" [disabled]="current.role !== 'CLIENTE'">
+            <select formControlName="tipoServico">
               <option value="BANHO">{{ serviceLabel('BANHO') }}</option>
               <option value="TOSA">{{ serviceLabel('TOSA') }}</option>
               <option value="BANHO_E_TOSA">{{ serviceLabel('BANHO_E_TOSA') }}</option>
@@ -57,11 +57,11 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
           <div class="grid">
             <label>
               Data
-              <input type="date" formControlName="data" [disabled]="current.role !== 'CLIENTE'" />
+              <input type="date" formControlName="data" />
             </label>
             <label>
               Horário
-              <input type="time" formControlName="horario" [disabled]="current.role !== 'CLIENTE'" />
+              <input type="time" formControlName="horario" />
             </label>
           </div>
           <label>
@@ -70,10 +70,9 @@ import { AvailableSlot } from '../../../core/domain/repositories/appointment.rep
               rows="3"
               formControlName="observacoesCliente"
               placeholder="Cliente prefere tosa higiênica e banho morno"
-              [disabled]="current.role !== 'CLIENTE'"
             ></textarea>
           </label>
-          <button type="submit" [disabled]="form.invalid || creating() || current.role !== 'CLIENTE'">
+          <button type="submit" [disabled]="form.invalid || creating() || form.disabled">
             {{ creating() ? 'Agendando...' : 'Agendar' }}
           </button>
 
@@ -332,25 +331,43 @@ export class SchedulePageComponent implements OnInit, OnDestroy {
   readonly user = signal<User | null>(null);
 
   constructor() {
-    effect(() => {
-      const date = this.form.controls.data.value;
-      const tipoServico = this.form.controls.tipoServico.value as 'BANHO' | 'TOSA' | 'BANHO_E_TOSA';
+    effect(
+      () => {
+        const role = this.user()?.role;
+        const date = this.form.controls.data.value;
+        const tipoServico = this.form.controls.tipoServico.value as 'BANHO' | 'TOSA' | 'BANHO_E_TOSA';
 
-      if (this.availabilitySubscription) {
-        this.availabilitySubscription.unsubscribe();
-        this.availabilitySubscription = null;
-      }
+        if (this.availabilitySubscription) {
+          this.availabilitySubscription.unsubscribe();
+          this.availabilitySubscription = null;
+        }
 
-      if (!date || !tipoServico) {
-        this.availableSlots.set(null);
-        return;
-      }
+        if (role !== 'CLIENTE' || !date || !tipoServico) {
+          this.availableSlots.set(null);
+          return;
+        }
 
-      this.availabilitySubscription = this.listAvailabilityUseCase.execute(date, tipoServico).subscribe({
-        next: (slots: AvailableSlot[]) => this.availableSlots.set(slots),
-        error: () => this.availableSlots.set([])
-      });
-    });
+        this.availabilitySubscription = this.listAvailabilityUseCase.execute(date, tipoServico).subscribe({
+          next: (slots: AvailableSlot[]) => this.availableSlots.set(slots),
+          error: () => this.availableSlots.set([])
+        });
+      },
+      { allowSignalWrites: true }
+    );
+
+    effect(
+      () => {
+        const role = this.user()?.role;
+
+        if (role === 'CLIENTE' && this.form.disabled) {
+          this.form.enable({ emitEvent: false });
+        } else if (role !== 'CLIENTE' && this.form.enabled) {
+          this.form.disable({ emitEvent: false });
+          this.availableSlots.set(null);
+        }
+      },
+      { allowSignalWrites: true }
+    );
   }
 
   ngOnInit(): void {
@@ -378,7 +395,7 @@ export class SchedulePageComponent implements OnInit, OnDestroy {
   }
 
   schedule(): void {
-    if (this.form.invalid || this.user()?.role !== 'CLIENTE') {
+    if (this.form.invalid || this.form.disabled) {
       return;
     }
 
