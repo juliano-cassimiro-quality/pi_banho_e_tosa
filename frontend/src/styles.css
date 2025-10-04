@@ -1,17 +1,62 @@
 :root {
+  color-scheme: light;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #f8fafc;
-  background-color: #0f172a;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --color-background: #f3f8f4;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #e6f3eb;
+  --color-border: rgba(24, 104, 63, 0.12);
+  --color-border-strong: rgba(24, 104, 63, 0.22);
+  --color-text: #163826;
+  --color-text-muted: #537362;
+  --color-heading: #0f291b;
+  --color-accent: #22c55e;
+  --color-accent-strong: #15803d;
+  --color-accent-soft: rgba(34, 197, 94, 0.14);
+  --color-danger: #f87171;
+  --color-danger-soft: rgba(248, 113, 113, 0.18);
+  --shadow-sm: 0 12px 35px rgba(16, 68, 40, 0.1);
+  --shadow-lg: 0 40px 120px rgba(16, 68, 40, 0.18);
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --color-background: #06110b;
+  --color-surface: #0d1b12;
+  --color-surface-elevated: #112718;
+  --color-border: rgba(122, 168, 140, 0.22);
+  --color-border-strong: rgba(122, 168, 140, 0.36);
+  --color-text: #ecfdf5;
+  --color-text-muted: #8fb19b;
+  --color-heading: #d8fbe6;
+  --color-accent: #34d399;
+  --color-accent-strong: #059669;
+  --color-accent-soft: rgba(52, 211, 153, 0.16);
+  --color-danger: #fca5a5;
+  --color-danger-soft: rgba(252, 165, 165, 0.18);
+  --shadow-sm: 0 18px 45px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 45px 140px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, rgba(56, 189, 248, 0.08), transparent 55%), #0f172a;
   min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
   color: inherit;
+}
+
+a:hover {
+  color: var(--color-accent-strong);
 }
 
 button {
@@ -25,9 +70,15 @@ textarea {
 }
 
 code {
-  padding: 0.15rem 0.45rem;
-  border-radius: 0.45rem;
-  background: rgba(148, 163, 184, 0.15);
-  color: #cbd5f5;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.5rem;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
   font-size: 0.85rem;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #ffffff;
 }

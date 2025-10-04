@@ -67,12 +67,13 @@ export type AppointmentAction = 'cancel' | 'reschedule' | 'complete';
       }
 
       .item {
-        background: rgba(15, 23, 42, 0.75);
+        background: var(--color-surface);
         border-radius: 1.75rem;
         padding: 1.75rem;
-        border: 1px solid rgba(148, 163, 184, 0.2);
+        border: 1px solid var(--color-border);
         display: grid;
         gap: 1.5rem;
+        box-shadow: var(--shadow-sm);
       }
 
       header {
@@ -91,13 +92,14 @@ export type AppointmentAction = 'cancel' | 'reschedule' | 'complete';
       .title h3 {
         margin: 0;
         font-size: 1.4rem;
+        color: var(--color-heading);
       }
 
       .service {
         font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: #38bdf8;
+        color: var(--color-text-muted);
       }
 
       .status {
@@ -108,30 +110,33 @@ export type AppointmentAction = 'cancel' | 'reschedule' | 'complete';
         text-transform: uppercase;
         letter-spacing: 0.08em;
         border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
       }
 
       .status.AGENDADO {
-        background: rgba(59, 130, 246, 0.15);
-        border-color: rgba(59, 130, 246, 0.3);
-        color: #60a5fa;
+        background: color-mix(in srgb, var(--color-accent-soft) 60%, transparent);
+        border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+        color: var(--color-accent-strong);
       }
 
       .status.CONFIRMADO {
         background: rgba(45, 212, 191, 0.18);
         border-color: rgba(45, 212, 191, 0.35);
-        color: #5eead4;
+        color: #0f766e;
       }
 
       .status.CONCLUIDO {
         background: rgba(34, 197, 94, 0.18);
         border-color: rgba(34, 197, 94, 0.35);
-        color: #4ade80;
+        color: #15803d;
       }
 
       .status.CANCELADO {
-        background: rgba(239, 68, 68, 0.18);
-        border-color: rgba(239, 68, 68, 0.35);
-        color: #fca5a5;
+        background: var(--color-danger-soft);
+        border-color: rgba(248, 113, 113, 0.35);
+        color: var(--color-danger);
       }
 
       dl {
@@ -145,19 +150,20 @@ export type AppointmentAction = 'cancel' | 'reschedule' | 'complete';
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #94a3b8;
+        color: var(--color-text-muted);
       }
 
       dd {
         margin: 0.35rem 0 0;
         font-weight: 600;
+        color: var(--color-heading);
       }
 
       .muted {
         display: block;
         font-weight: 400;
         font-size: 0.8rem;
-        color: #94a3b8;
+        color: var(--color-text-muted);
       }
 
       footer {
@@ -171,28 +177,30 @@ export type AppointmentAction = 'cancel' | 'reschedule' | 'complete';
         padding: 0.6rem 1.2rem;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.15s ease;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
       }
 
       button:hover {
         transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
       }
 
       .ghost {
-        border: 1px solid rgba(148, 163, 184, 0.35);
+        border: 1px solid var(--color-border);
         background: transparent;
-        color: #e2e8f0;
+        color: var(--color-text);
       }
 
       .primary {
         border: none;
-        background: linear-gradient(135deg, #38bdf8, #6366f1);
-        color: #0f172a;
+        background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-strong) 100%);
+        color: #ffffff;
+        box-shadow: var(--shadow-sm);
       }
 
       .empty {
         text-align: center;
-        color: #94a3b8;
+        color: var(--color-text-muted);
         padding: 2rem 0;
       }
     `
@@ -201,44 +209,36 @@ export type AppointmentAction = 'cancel' | 'reschedule' | 'complete';
 export class AppointmentListComponent {
   @Input() appointments: Appointment[] | null = null;
   @Input() role: User['role'] | null = null;
-
   @Output() action = new EventEmitter<{ type: AppointmentAction; appointment: Appointment }>();
+
+  hasActions(appointment: Appointment): boolean {
+    return this.role === 'PROFISSIONAL' || this.canComplete(appointment) || this.canCancel(appointment);
+  }
+
+  canReschedule(appointment: Appointment): boolean {
+    return this.role === 'PROFISSIONAL' && appointment.status === 'AGENDADO';
+  }
+
+  canCancel(appointment: Appointment): boolean {
+    return (
+      (this.role === 'PROFISSIONAL' || this.role === 'CLIENTE') &&
+      (appointment.status === 'AGENDADO' || appointment.status === 'CONFIRMADO')
+    );
+  }
+
+  canComplete(appointment: Appointment): boolean {
+    return this.role === 'PROFISSIONAL' && appointment.status === 'CONFIRMADO';
+  }
+
+  emit(type: AppointmentAction, appointment: Appointment): void {
+    this.action.emit({ type, appointment });
+  }
 
   statusLabel(status: StatusAgendamento): string {
     return statusLabelFn(status);
   }
 
-  serviceLabel(tipo: Appointment['tipoServico']): string {
-    return serviceLabelFn(tipo);
-  }
-
-  hasActions(appointment: Appointment): boolean {
-    return this.canCancel(appointment) || this.canReschedule(appointment) || this.canComplete(appointment);
-  }
-
-  canCancel(appointment: Appointment): boolean {
-    return (
-      this.role === 'CLIENTE' &&
-      (appointment.status === 'AGENDADO' || appointment.status === 'CONFIRMADO')
-    );
-  }
-
-  canReschedule(appointment: Appointment): boolean {
-    if (appointment.status === 'CANCELADO' || appointment.status === 'CONCLUIDO') {
-      return false;
-    }
-    return this.role === 'CLIENTE' || this.role === 'PROFISSIONAL';
-  }
-
-  canComplete(appointment: Appointment): boolean {
-    return (
-      this.role === 'PROFISSIONAL' &&
-      appointment.status !== 'CANCELADO' &&
-      appointment.status !== 'CONCLUIDO'
-    );
-  }
-
-  emit(type: AppointmentAction, appointment: Appointment): void {
-    this.action.emit({ type, appointment });
+  serviceLabel(service: Appointment['tipoServico']): string {
+    return serviceLabelFn(service);
   }
 }
